@@ -13,6 +13,9 @@ raw_data <- read_csv("data.csv")
 ## and https://mastering-shiny.org/action-layout.html (tabPanel idea/syntax)
 ## and https://shiny.rstudio.com/articles/layout-guide.html (navbarPage idea/syntax and
 ## fluidRow, column idea and syntax)
+## and https://shiny.rstudio.com/reference/shiny/1.6.0/textOutput.html (textOutput  idea/syntax)
+## and https://campus.datacamp.com/courses/case-studies-building-web-applications-with-shiny-in-r/shiny-review?ex=3
+## (strong("text") idea and syntax)
 
 ui <- fluidPage(
   navbarPage("CSC/SDS 235 Final Project: Michelle, Lauryn, Grace",
@@ -20,18 +23,19 @@ ui <- fluidPage(
       fluidRow(
         column(
           5,
-          verbatimTextOutput("texta")),
+          strong("About Our Project"),
+          textOutput("texta2"),
+          strong("Characterizing the Sample"),
+          textOutput("textc")),
           column(
             7,
-            verbatimTextOutput("textb")
+            strong("Interesting Findings"),
+            textOutput("textb"),
+            plotOutput("static_plot"),
+            plotOutput("static_plot2")
           )
-        ),
-        fluidRow(
-          column(
-            5,
-            verbatimTextOutput("textc")),
-          )
-        ),
+        )
+      ),
       tabPanel("Interactive Dashboard",
         sidebarLayout(
           sidebarPanel(
@@ -62,11 +66,22 @@ server <- function(input, output, session) {
       xlab(input$variable1) +
       ylab(input$variable2)
   )
-
-  output$texta <- renderText("About Our Project")
-  output$textb <- renderText("Interesting Findings")
-  output$textc <- renderText("Characterizing the Sample")
-  output$textd <- renderText("Interesting Findings")
+  
+  output$static_plot <- renderPlot(
+    ggplot(raw_data, aes(x = MARITAL_W56, y = F_PARTY_FINAL)) +
+      geom_count() +
+      ggtitle("Insert More Interesting Graph Here")
+  )
+  
+  output$static_plot2 <- renderPlot(
+    ggplot(raw_data, aes(x = MARITAL_W56, y = F_INCOME)) +
+      geom_count() +
+      ggtitle("Insert More Interesting Graph Here")
+  )
+  
+  output$texta2 <- renderText("This application provides an analysis of and means to interact with data from the 2019 Pew Research Center survey on the intersection between romantic relationships and technology. The set of participants recruited for the survey, part of the American Trends Panel, were designed to serve as a representative sample of the US (Pew Research Center, 2019). Download the dataset with a Pew Research Center account and view their analysis here https://www.pewresearch.org/internet/2020/05/08/dating-and-relationships-in-the-digital-age/ (Vogels & Anderson, 2020).\n\n")
+  output$textb <- renderText("Put what we find from the interesting findings as a summary here")
+  output$textc <- renderText("This sample is largely married or living with a partner (__%), straight (__%), politically moderate (___%) or liberal (__%), non-Hispanic white (___%), and ages 30-64 (_%) with a college degree or higher (___%).")
 }
 
 # Run the application
