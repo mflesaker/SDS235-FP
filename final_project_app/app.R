@@ -2,6 +2,7 @@
 library(shiny)
 library(tidyverse)
 library(scales)
+library(bslib)
 
 raw_data <- read_csv("data.csv")
 
@@ -9,26 +10,41 @@ raw_data <- read_csv("data.csv")
 ## idea/syntax)
 ## and https://mastering-shiny.org/action-layout.html (titlePanel, sidebarLayout, sidebarPanel,
 ## mainPanel idea/syntax)
+## and https://mastering-shiny.org/action-layout.html (tabPanel idea/syntax)
+## and https://shiny.rstudio.com/articles/layout-guide.html (navbarPage idea/syntax and
+## fluidRow, column idea and syntax)
 
 ui <- fluidPage(
-  titlePanel("CSC/SDS 235 Final Project: Michelle, Lauryn, Grace"),
-  tabsetPanel(
-    tabPanel("Interactive Dashboard",
-      sidebarLayout(
-        sidebarPanel(
-          selectInput(inputId = "variable1", label = "Choose Variable 1", names(raw_data)),
-          selectInput(inputId = "variable2", label = "Choose Variable 2", names(raw_data))
+  navbarPage("CSC/SDS 235 Final Project: Michelle, Lauryn, Grace",
+    tabPanel("Static Data Analysis",
+      fluidRow(
+        column(
+          5,
+          verbatimTextOutput("texta")),
+          column(
+            7,
+            verbatimTextOutput("textb")
+          )
         ),
-        mainPanel(
-          plotOutput("plot")
+        fluidRow(
+          column(
+            5,
+            verbatimTextOutput("textc")),
+          )
+        ),
+      tabPanel("Interactive Dashboard",
+        sidebarLayout(
+          sidebarPanel(
+            selectInput(inputId = "variable1", label = "Choose Variable 1", names(raw_data)),
+            selectInput(inputId = "variable2", label = "Choose Variable 2", names(raw_data))
+          ),
+          mainPanel(
+            plotOutput("plot")
+          )
         )
       )
-    ),
-    tabPanel("Static Data Analysis",
-        verbatimTextOutput("Abour Our Project")
     )
   )
-)
 
 
 ## code copied and modified from https://mastering-shiny.org/basic-app.html and
@@ -46,6 +62,11 @@ server <- function(input, output, session) {
       xlab(input$variable1) +
       ylab(input$variable2)
   )
+
+  output$texta <- renderText("About Our Project")
+  output$textb <- renderText("Interesting Findings")
+  output$textc <- renderText("Characterizing the Sample")
+  output$textd <- renderText("Interesting Findings")
 }
 
 # Run the application
