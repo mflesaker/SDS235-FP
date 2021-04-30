@@ -30,7 +30,7 @@ server <- function(input, output, session) {
     
     output$plot <- renderPlot(
         ggplot(raw_data, aes(x = get(input$variable1), y = get(input$variable2))) +
-            geom_jitter()
+            geom_count()
     )
 }
 
