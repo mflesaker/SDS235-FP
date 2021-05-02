@@ -53,15 +53,24 @@ ui <- fluidPage(
       sidebarLayout(
         sidebarPanel(
           selectInput(inputId = "variable1", label = "Choose Variable 1", names(raw_data)),
-          selectInput(inputId = "variable2", label = "Choose Variable 2", names(raw_data))
-        ),
-        mainPanel(
-          plotOutput("plot")
+          
+          ## code for this conditional panel is directly copied and pasted from 
+          ## the example at https://shiny.rstudio.com/reference/shiny/1.3.0/conditionalPanel.html
+          
+          selectInput(inputId = "plotType", label = "Plot Type", c(Bar = "bar", Count = "count")),
+          # Only show this panel if the plot type is a two-way count
+          conditionalPanel(
+            condition = "input.plotType == 'count'",
+            selectInput(inputId = "variable2", label = "Choose Variable 2", names(raw_data)),
+          )),
+        
+          mainPanel(
+            plotOutput("plot")
+          )
         )
       )
     )
   )
-)
 
 
 
