@@ -1,0 +1,13 @@
+name: final_project_app
+title:
+username:
+account: mflesaker
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4065322
+bundleId: 4546695
+url: https://mflesaker.shinyapps.io/final_project_app/
+when: 1619963773.7234
+lastSyncTime: 1619963773.72341
+asMultiple: FALSE
+asStatic: FALSE

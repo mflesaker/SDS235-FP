@@ -3,6 +3,7 @@ library(shiny)
 library(tidyverse)
 library(scales)
 library(bslib)
+library(rsconnect)
 
 raw_data <- read_csv("data.csv")
 
@@ -18,37 +19,50 @@ raw_data <- read_csv("data.csv")
 ## (strong("text") idea and syntax)
 
 ui <- fluidPage(
-  navbarPage("CSC/SDS 235 Final Project: Michelle, Lauryn, Grace",
-    tabPanel("Static Data Analysis",
+  navbarPage(
+    "CSC/SDS 235 Final Project: Michelle, Lauryn, Grace",
+    tabPanel(
+      "Static Data Analysis",
       fluidRow(
         column(
           5,
           strong("About Our Project"),
-          textOutput("texta2"),
-          strong("Characterizing the Sample"),
-          textOutput("textc")),
-          column(
-            7,
-            strong("Interesting Findings"),
-            textOutput("textb"),
-            plotOutput("static_plot"),
-            plotOutput("static_plot2")
-          )
+          textOutput("texta2")
+        ),
+        column(
+          7,
+          strong("Interesting Findings"),
+          textOutput("textb"),
+          plotOutput("static_plot")
         )
       ),
-      tabPanel("Interactive Dashboard",
-        sidebarLayout(
-          sidebarPanel(
-            selectInput(inputId = "variable1", label = "Choose Variable 1", names(raw_data)),
-            selectInput(inputId = "variable2", label = "Choose Variable 2", names(raw_data))
-          ),
-          mainPanel(
-            plotOutput("plot")
-          )
+      fluidRow(
+        column(
+          5,
+          strong("Characterizing the Sample"),
+          textOutput("textc")
+        ),
+        column(
+          7,
+          plotOutput("static_plot2")
+        )
+      )
+    ),
+    tabPanel(
+      "Interactive Dashboard",
+      sidebarLayout(
+        sidebarPanel(
+          selectInput(inputId = "variable1", label = "Choose Variable 1", names(raw_data)),
+          selectInput(inputId = "variable2", label = "Choose Variable 2", names(raw_data))
+        ),
+        mainPanel(
+          plotOutput("plot")
         )
       )
     )
   )
+)
+
 
 
 ## code copied and modified from https://mastering-shiny.org/basic-app.html and
@@ -66,19 +80,19 @@ server <- function(input, output, session) {
       xlab(input$variable1) +
       ylab(input$variable2)
   )
-  
+
   output$static_plot <- renderPlot(
     ggplot(raw_data, aes(x = MARITAL_W56, y = F_PARTY_FINAL)) +
       geom_count() +
       ggtitle("Insert More Interesting Graph Here")
   )
-  
+
   output$static_plot2 <- renderPlot(
     ggplot(raw_data, aes(x = MARITAL_W56, y = F_INCOME)) +
       geom_count() +
       ggtitle("Insert More Interesting Graph Here")
   )
-  
+
   output$texta2 <- renderText("This application provides an analysis of and means to interact with data from the 2019 Pew Research Center survey on the intersection between romantic relationships and technology. The set of participants recruited for the survey, part of the American Trends Panel, were designed to serve as a representative sample of the US (Pew Research Center, 2019). Download the dataset with a Pew Research Center account and view their analysis here https://www.pewresearch.org/internet/2020/05/08/dating-and-relationships-in-the-digital-age/ (Vogels & Anderson, 2020).")
   output$textb <- renderText("Put what we find from the interesting findings as a summary here")
   output$textc <- renderText("This sample is largely married or living with a partner (__%), straight (__%), politically moderate (___%) or liberal (__%), non-Hispanic white (___%), and ages 30-64 (_%) with a college degree or higher (___%).")
