@@ -53,10 +53,30 @@ ui <- fluidPage(
       sidebarLayout(
         sidebarPanel(
           selectInput(inputId = "variable1", label = "Choose Variable 1", names(raw_data)),
-          selectInput(inputId = "variable2", label = "Choose Variable 2", names(raw_data))
+
+          ## code for this conditional panel is directly copied and pasted from
+          ## the example at https://shiny.rstudio.com/reference/shiny/1.3.0/conditionalPanel.html -----------
+
+          selectInput(inputId = "plotType", label = "Plot Type", c(Bar = "bar", Count = "count")),
+          # Only show this panel if the plot type is a two-way count
+          conditionalPanel(
+            condition = "input.plotType == 'count'",
+            selectInput(inputId = "variable2", label = "Choose Variable 2", names(raw_data)),
+          )
         ),
+        
+        ### ---------------------------------------------------------------------------------------
+        
+        ## the conditional plot code is based on the conditional panel code above
         mainPanel(
-          plotOutput("plot")
+          conditionalPanel(
+            condition = "input.plotType == 'bar'",
+            plotOutput("plotbar")
+          ),
+          conditionalPanel(
+            condition = "input.plotType == 'count'",
+            plotOutput("plotcount")
+          )
         )
       )
     )
@@ -68,7 +88,13 @@ ui <- fluidPage(
 ## code copied and modified from https://mastering-shiny.org/basic-app.html and
 # https://mastering-shiny.org/basic-ui.html
 server <- function(input, output, session) {
-  output$plot <- renderPlot(
+  output$plotbar <- renderPlot(
+    ggplot(raw_data, aes(y = get(input$variable1))) +
+      geom_bar() +
+      ylab(input$variable1)
+  )
+
+  output$plotcount <- renderPlot(
     ggplot(raw_data, aes(x = get(input$variable1), y = get(input$variable2))) +
 
       ## geom_count idea and syntax from
