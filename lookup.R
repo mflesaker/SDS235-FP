@@ -1,6 +1,6 @@
 library(tidyr)
 
-var_names<-dput(names(data))
+var_names<-dput(names(raw_data))
 
 
 questions <- c(NA, NA, NA, NA, NA, NA, "Which of these best describes you?", 
@@ -74,7 +74,6 @@ questions <- c(NA, NA, NA, NA, NA, NA, "Which of these best describes you?",
                "Now thinking about your spouse or partner, are they...",
                "Do you think of yourself as...", NA, NA, NA,  NA, NA, NA,  NA, NA, NA,  NA, NA, NA,  NA, NA)
             
-          
- 
+
 lookup_questions <- data.frame(var_names, questions)
 
