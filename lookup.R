@@ -1,8 +1,11 @@
 library(tidyr)
 
+#Get variable names from original dataset
 var_names<-dput(names(raw_data))
+#Convert variable names to single column with 183 rows
+var_names <- cbind(var_names)
 
-
+#Get questions from questionnaire corresponding to each variable
 questions <- c(NA, NA, NA, NA, NA, NA, "Which of these best describes you?", 
                "Are you currently in a committed romantic relationship?", 
                "Have you ever been in a committed romantic relationship?", 
@@ -74,6 +77,9 @@ questions <- c(NA, NA, NA, NA, NA, NA, "Which of these best describes you?",
                "Now thinking about your spouse or partner, are they...",
                "Do you think of yourself as...", NA, NA, NA,  NA, NA, NA,  NA, NA, NA,  NA, NA, NA,  NA, NA)
             
+#Convert questions to single col, 183 rows
+questions <- cbind(questions)
 
+#Combine variables and questions into df
 lookup_questions <- data.frame(var_names, questions)
 
