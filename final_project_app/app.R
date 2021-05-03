@@ -52,6 +52,8 @@ ui <- fluidPage(
       "Interactive Dashboard",
       sidebarLayout(
         sidebarPanel(
+          #Attempt to add questions variable 
+          selectInput(inputId = "question", label = "Choose a question", lookup_questions$questions),
           selectInput(inputId = "variable1", label = "Choose Variable 1", names(raw_data)),
 
           ## code for this conditional panel is directly copied and pasted from
