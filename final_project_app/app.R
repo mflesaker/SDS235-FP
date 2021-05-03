@@ -228,7 +228,8 @@ ui <- fluidPage(
       "Interactive Dashboard",
       sidebarLayout(
         sidebarPanel(
-          #Attempt to add questions variable 
+          
+          ## selected = idea and syntax from https://shiny.rstudio.com/reference/shiny/0.12.2/selectInput.html
           selectInput(inputId = "variable1", label = "Choose a first variable", selected = "Current Committed Relationship Status", lookup_questions$questions),
           
           ## code for this conditional panel is directly copied and pasted from
