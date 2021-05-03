@@ -9,7 +9,7 @@ library(tidyverse)
 raw_data <- read_csv("final_project_app/data.csv") %>%
   select(-QKEY, -INTERVIEW_START_W56, -INTERVIEW_END_W56, -DEVICE_TYPE_W56, -SAMPLE_W56, -FORM_W56, -WHYDATE10YRHARDOE_M1_W56, -WHYDATE10YRHARDOE_M2_W56, -WHYDATE10YRHARDOE_M3_W56, -WHYDATE10YRHARD_TECH_W56, -WHYDATE10YREASYOE_M1_W56,-WHYDATE10YREASYOE_M2_W56,-WHYDATE10YREASYOE_M3_W56, -WHYDATE10YREASY_TECH_W56, -ONIMPACTPOSOE_M1_W56, -ONIMPACTPOSOE_M2_W56, 
 -ONIMPACTPOSOE_M3_W56, -ONIMPACTNEGOE_M1_W56, -ONIMPACTNEGOE_M2_W56, 
--ONIMPACTNEGOE_M3_W56)
+-ONIMPACTNEGOE_M3_W56, -F_ACSWEB, -F_VOLSUM, -WEIGHT_W56_ATPONLY, -WEIGHT_W56)
 
 #Get variable names from original dataset
 var_names<-dput(names(raw_data))
@@ -157,7 +157,28 @@ questions <- c("Marital Status",
               "Thinking about your own personal experiences, has someone ever continued to contact you after you said you were not interested ON AN ONLINE DATING SITE OR DATING APP?",
                "What sex is your spouse or partner?",
                "Sexual orientation", 
-              NA, NA, NA,  NA, NA, NA,  NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA)
+              "Type of Metro Area?", 
+              "Type of Region?", 
+              "User Self ID?",  
+              "Age Category", 
+              "Sex", 
+              "Education",  
+              "Education (dichotomized)", 
+              "Race/Ethnicity", 
+              "Nativity", 
+              "Citizenship Status", 
+              "Marital Status", 
+              "Religion", 
+              "Born", 
+              "Attend", 
+              "Political Party", 
+              "Political Party 2", 
+              "Political Party 3", 
+              "Income", 
+              "Income (dichotomized)", 
+              "Reg", 
+              "Reg_KP", 
+              "Ideology")
 ```
 
 ```{r}            
@@ -167,4 +188,25 @@ questions <- cbind(questions)
 #Combine variables and questions into df
 lookup_questions <- data.frame(var_names, questions)
 ```
+
+
+```{r}
+name <- lookup_questions %>%
+  filter(questions == "Political Party") %>%
+  pull(var_names[1]) 
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
