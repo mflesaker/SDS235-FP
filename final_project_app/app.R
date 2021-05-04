@@ -320,7 +320,11 @@ server <- function(input, output, session) {
                            pull(var_names[1])), 
                  fill = n)) +
       geom_tile() +
+      
+      ## HTML color codes from https://htmlcolorcodes.com/
+      ## scale fill gradient idea and syntax from https://ggplot2.tidyverse.org/reference/scale_gradient.html
       scale_fill_gradient(low = "#FFFFFF", high = "#000773", na.value = "#8E8E8E") +
+      
       xlab(str_wrap(input$variable1)) +
       ylab(str_wrap(input$variable2))+
       ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
