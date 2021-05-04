@@ -240,7 +240,7 @@ ui <- fluidPage(
           # Only show this panel if the plot type is a two-way count
           conditionalPanel(
             condition = "input.plotType == 'count'",
-            selectInput(inputId = "variable2", label = "Choose a second variable", selected = "Current Committed Relationship Status", lookup_questions$questions),
+            selectInput(inputId = "variable2", label = "Choose a second variable", selected = "Region of the US they reside in", lookup_questions$questions),
           )
         ),
 
@@ -254,11 +254,7 @@ ui <- fluidPage(
           ),
           conditionalPanel(
             condition = "input.plotType == 'count'",
-            plotOutput("plotcount")
-          ),
-          #Attempt to add heatmap
-          conditionalPanel(
-            condition = "input.plotType == 'count'",
+            plotOutput("plotcount"),
             plotOutput("heatmap")
           )
         )
@@ -301,18 +297,24 @@ server <- function(input, output, session) {
   )
 #Attempt to build heatmap
   output$heatmap <- renderPlot(
-    ggplot(raw_data, aes(
-      x = get(lookup_questions %>%
-                filter(questions == input$variable1) %>%
-                pull(var_names[1])),
-      y = get(lookup_questions %>%
-                filter(questions == input$variable2) %>%
-                pull(var_names[1])),
-      fill = nrow(raw_data %>%
-                    select(get(lookup_questions %>%
-                                 filter(questions == input$variable1) %>%
-                                 pull(var_names[1]))))
-    )) +
+    raw_data %>%
+      ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
+      group_by_(lookup_questions %>%
+                     filter(questions == input$variable1) %>%
+                     pull(var_names[1]), 
+               lookup_questions %>%
+                     filter(questions == input$variable2) %>%
+                     pull(var_names[1])) %>%
+      summarize(
+        n = n()
+      ) %>%
+      ggplot(aes(x = get(lookup_questions %>%
+                           filter(questions == input$variable1) %>%
+                           pull(var_names[1])), 
+                 y = get(lookup_questions %>%
+                           filter(questions == input$variable2) %>%
+                           pull(var_names[1])), 
+                 fill = n)) +
       geom_tile() +
       xlab(str_wrap(input$variable1)) +
       ylab(str_wrap(input$variable2))

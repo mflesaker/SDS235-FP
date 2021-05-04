@@ -191,9 +191,14 @@ lookup_questions <- data.frame(var_names, questions)
 
 
 ```{r}
-name <- lookup_questions %>%
-  filter(questions == "Political Party") %>%
-  pull(var_names[1]) 
+raw_data %>%
+  group_by(MARITAL_W56, F_IDEO) %>%
+  summarize(
+    n = n()
+  ) %>%
+  ggplot(aes(x = MARITAL_W56, y = F_IDEO, fill = n)) +
+  geom_tile()
+
 ```
 
 
