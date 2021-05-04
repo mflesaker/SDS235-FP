@@ -277,7 +277,7 @@ server <- function(input, output, session) {
       filter(questions == input$variable1) %>%
       pull(var_names[1])))) +
       geom_bar() +
-      xlab(input$variable1)
+      xlab(str_wrap(input$variable1))
   )
 
   output$plotcount <- renderPlot(
@@ -296,8 +296,8 @@ server <- function(input, output, session) {
 
       ## adding proper x and y labels from
       ## https://web.stanford.edu/~cengel/cgi-bin/anthrospace/building-my-first-shiny-application-with-ggplot
-      xlab(input$variable1) +
-      ylab(input$variable2)
+      xlab(str_wrap(input$variable1)) +
+      ylab(str_wrap(input$variable2))
   )
 #Attempt to build heatmap
   output$heatmap <- renderPlot(
@@ -314,8 +314,8 @@ server <- function(input, output, session) {
                                  pull(var_names[1]))))
     )) +
       geom_tile() +
-      xlab(input$variable1) +
-      ylab(input$variable2)
+      xlab(str_wrap(input$variable1)) +
+      ylab(str_wrap(input$variable2))
   )
   
   output$static_plot <- renderPlot(
