@@ -5,6 +5,7 @@ library(scales)
 library(bslib)
 library(rsconnect)
 library(shinythemes)
+library(plotly)
 
 raw_data <- read_csv("data.csv") %>%
   select(
@@ -273,10 +274,12 @@ server <- function(input, output, session) {
     ggplotly(ggplot(raw_data, aes(x = get(lookup_questions %>%
       filter(questions == input$variable1) %>%
       pull(var_names[1])))) +
-      geom_bar() +
+      geom_bar(text = paste0("test")) +
       xlab(str_wrap(input$variable1)) +
         ## label code from https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
-      scale_x_discrete(labels = function(x) str_wrap(x, width = 10)))
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10)),
+      text= ~paste0("test"),
+      hoverinfo = text)
   )
 
   output$plotcount <- renderPlot(
