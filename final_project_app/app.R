@@ -273,7 +273,9 @@ server <- function(input, output, session) {
       filter(questions == input$variable1) %>%
       pull(var_names[1])))) +
       geom_bar() +
-      xlab(str_wrap(input$variable1))
+      xlab(str_wrap(input$variable1) +
+             scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
+             )
   )
 
   output$plotcount <- renderPlot(
@@ -293,7 +295,8 @@ server <- function(input, output, session) {
       ## adding proper x and y labels from
       ## https://web.stanford.edu/~cengel/cgi-bin/anthrospace/building-my-first-shiny-application-with-ggplot
       xlab(str_wrap(input$variable1)) +
-      ylab(str_wrap(input$variable2))
+      ylab(str_wrap(input$variable2)) + 
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
   )
 #Attempt to build heatmap
   output$heatmap <- renderPlot(
@@ -317,19 +320,24 @@ server <- function(input, output, session) {
                  fill = n)) +
       geom_tile() +
       xlab(str_wrap(input$variable1)) +
-      ylab(str_wrap(input$variable2))
+      ylab(str_wrap(input$variable2))+
+      ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
+    
   )
   
   output$static_plot <- renderPlot(
     ggplot(raw_data, aes(x = MARITAL_W56, y = F_PARTY_FINAL)) +
       geom_count() +
-      ggtitle("Insert More Interesting Graph Here")
+      ggtitle("Insert More Interesting Graph Here") +
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
   )
 
   output$static_plot2 <- renderPlot(
     ggplot(raw_data, aes(x = MARITAL_W56, y = F_INCOME)) +
       geom_count() +
-      ggtitle("Insert More Interesting Graph Here")
+      ggtitle("Insert More Interesting Graph Here") + 
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
   )
 
   
