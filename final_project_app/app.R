@@ -307,7 +307,11 @@ server <- function(input, output, session) {
                 pull(var_names[1])),
       y = get(lookup_questions %>%
                 filter(questions == input$variable2) %>%
-                pull(var_names[1]))
+                pull(var_names[1])),
+      fill = nrow(raw_data %>%
+                    select(get(lookup_questions %>%
+                                 filter(questions == input$variable1) %>%
+                                 pull(var_names[1]))))
     )) +
       geom_tile() +
       xlab(input$variable1) +
