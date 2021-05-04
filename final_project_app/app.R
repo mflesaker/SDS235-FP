@@ -255,6 +255,7 @@ ui <- fluidPage(
           conditionalPanel(
             condition = "input.plotType == 'count'",
             plotOutput("plotcount"),
+            br(),
             plotOutput("heatmap")
           )
         )
@@ -319,6 +320,7 @@ server <- function(input, output, session) {
                            pull(var_names[1])), 
                  fill = n)) +
       geom_tile() +
+      scale_fill_gradient(low = "#FFFFFF", high = "#000773", na.value = "#8E8E8E") +
       xlab(str_wrap(input$variable1)) +
       ylab(str_wrap(input$variable2))+
       ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
