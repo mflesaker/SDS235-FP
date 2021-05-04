@@ -256,6 +256,11 @@ ui <- fluidPage(
           conditionalPanel(
             condition = "input.plotType == 'count'",
             plotOutput("plotcount")
+          ),
+          #Attempt to add heatmap
+          conditionalPanel(
+            condition = "input.plotType == 'count'",
+            plotOutput("heatmap")
           )
         )
       )
@@ -295,7 +300,21 @@ server <- function(input, output, session) {
       xlab(input$variable1) +
       ylab(input$variable2)
   )
-
+#Attempt to build heatmap
+  output$heatmap <- renderPlot(
+    ggplot(raw_data, aes(
+      x = get(lookup_questions %>%
+                filter(questions == input$variable1) %>%
+                pull(var_names[1])),
+      y = get(lookup_questions %>%
+                filter(questions == input$variable2) %>%
+                pull(var_names[1]))
+    )) +
+      geom_tile() +
+      xlab(input$variable1) +
+      ylab(input$variable2)
+  )
+  
   output$static_plot <- renderPlot(
     ggplot(raw_data, aes(x = MARITAL_W56, y = F_PARTY_FINAL)) +
       geom_count() +
