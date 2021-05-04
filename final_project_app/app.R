@@ -10,7 +10,7 @@ raw_data <- read_csv("data.csv") %>%
   select(
     -QKEY, -INTERVIEW_START_W56, -INTERVIEW_END_W56, -DEVICE_TYPE_W56, -SAMPLE_W56, -FORM_W56, -WHYDATE10YRHARDOE_M1_W56, -WHYDATE10YRHARDOE_M2_W56, -WHYDATE10YRHARDOE_M3_W56, -WHYDATE10YRHARD_TECH_W56, -WHYDATE10YREASYOE_M1_W56, -WHYDATE10YREASYOE_M2_W56, -WHYDATE10YREASYOE_M3_W56, -WHYDATE10YREASY_TECH_W56, -ONIMPACTPOSOE_M1_W56, -ONIMPACTPOSOE_M2_W56,
     -ONIMPACTPOSOE_M3_W56, -ONIMPACTNEGOE_M1_W56, -ONIMPACTNEGOE_M2_W56,
-    -ONIMPACTNEGOE_M3_W56, -F_ACSWEB, -F_VOLSUM, -WEIGHT_W56_ATPONLY, -WEIGHT_W56
+    -ONIMPACTNEGOE_M3_W56, -F_ACSWEB, -F_VOLSUM, -WEIGHT_W56_ATPONLY, -WEIGHT_W56, -F_ATTEND
   )
 
 # Get variable names from original dataset
@@ -42,7 +42,8 @@ questions <- c(
   "Where online did you first meet your spouse or partner?",
   "Compared to 10 years ago, for most people, do you think dating is...",
   "Is giving a hug acceptable on a first date?",
-  "Is kissing acceptable on a first date?", "Is having sex acceptable on a first date?",
+  "Is kissing acceptable on a first date?", 
+  "Is having sex acceptable on a first date?",
   "Is sex between unmarried adults who are in a committed relationship acceptable?",
   "Is having an open relationship- that is, a committed relationship where both people agree that it is acceptable to date or have sex with other people acceptable?",
   "Is casual sex between consenting adults who are not in a committed relationship acceptable?",
@@ -128,7 +129,7 @@ questions <- c(
   "As far as you know, does your spouse or partner have a cellphone?",
   "As far as you know, does your spouse or partner use social media sites?",
   "As far as you know, does your spouse or partner play video games on a computer, game console or cellphone?",
-  "How important, if at all, is social media to you personally when it comes to keeping up with what's going on your spouse's or partner's life",
+  "How important, if at all, is social media to you personally when it comes to keeping up with what's going on your spouse's or partner's life?",
   "How important, if at all, is social media to you personally when it comes to showing how much you care about your spouse or partner?",
   "Have you ever felt jealous or unsure about your relationship because of the way your current spouse or partner interacts with other people on social media?",
   "How often, if ever, do you feel as if your spouse or partner is distracted by their cellphone when you are trying to have a conversation with them?",
@@ -148,7 +149,6 @@ questions <- c(
   "Has someone you were dating or on a date with ever pressured you for sex?",
   "Has someone you were dating or on a date with ever touched you in a way that made you feel uncomfortable?",
   "Has someone you were dating or on a date with ever sent you sexually explicit images that you didn't ask for?",
-
   "As far as you know, has someone you were dating or been on a date with ever spread rumors about your sexual history?",
   "As far as you know, has someone you were dating or been on a date with ever shared a sexually explicit image of you without your consent?",
   "As far as you know, has someone you were dating or been on a date with ever publically shared your contact information or address without your permission?",
@@ -158,28 +158,27 @@ questions <- c(
   "Thinking about your own personal experiences, has someone ever continued to contact you after you said you were not interested ON AN ONLINE DATING SITE OR DATING APP?",
   "What sex is your spouse or partner?",
   "Sexual orientation",
-  "Type of Metro Area?",
-  "Type of Region?",
-  "User Self ID?",
-  "Age Category",
+  "Whether or not live in a metropolitan area",
+  "Region of the US they reside in",
+  "Type of region they reside in",
+  "Age category",
   "Sex",
   "Education",
-  "Education (dichotomized)",
+  "Education (expanded)",
   "Race/Ethnicity",
-  "Nativity",
+  "Place of birth",
   "Citizenship Status",
   "Marital Status",
   "Religion",
-  "Born",
-  "Attend",
-  "Political Party",
-  "Political Party 2",
-  "Political Party 3",
+  "Whether born-again or evangelical Christian",
+  "Political Party (Democrat/Republican/Independent)",
+  "Political Party (Democrat/Republican dichotimized)",
+  "Political Party (Dem/Lean Dem or Rep/Lean Rep dichotomized)",
   "Income",
-  "Income (dichotomized)",
-  "Reg",
-  "Reg_KP",
-  "Ideology"
+  "Income (trichotomized)",
+  "Voting registration status",
+  "Voting registration status (trichotomized)",
+  "Political ideology"
 )
 
 # Convert questions to single col
