@@ -208,7 +208,7 @@ ui <- fluidPage(
         column(
           5,
           strong("About Our Project"),
-          textOutput("texta2"),
+          htmlOutput("texta2"),
           
           ## https://shiny.rstudio.com/tutorial/written-tutorial/lesson2/ br idea
           br(),
@@ -332,7 +332,12 @@ server <- function(input, output, session) {
       ggtitle("Insert More Interesting Graph Here")
   )
 
-  output$texta2 <- renderText("This application provides an analysis of and means to interact with data from the 2019 Pew Research Center survey on the intersection between romantic relationships and technology. The set of participants recruited for the survey, part of the American Trends Panel, were designed to serve as a representative sample of the US (Pew Research Center, 2019). Download the dataset with a Pew Research Center account and view their analysis here https://www.pewresearch.org/internet/2020/05/08/dating-and-relationships-in-the-digital-age/ (Vogels & Anderson, 2020).")
+  
+  output$texta2 <-renderUI(HTML("This application provides an analysis of and means to 
+        interact with data from the 2019 Pew Research Center survey on the 
+                           intersection between romantic relationships and technology. The set of participants recruited for the survey, part of the American Trends Panel, were designed to serve as a representative sample of the US (Pew Research Center, 2019). 
+                           Download the dataset with a Pew Research Center account and view their 
+                           analysis <a href ='https://www.pewresearch.org/internet/2020/05/08/dating-and-relationships-in-the-digital-age/'>here</a> (Vogels & Anderson, 2020)."))
   output$textb <- renderText("Put what we find from the interesting findings as a summary here")
   output$textc <- renderText("This sample is largely married or living with a partner (__%), straight (__%), politically moderate (___%) or liberal (__%), non-Hispanic white (___%), and ages 30-64 (_%) with a college degree or higher (___%).")
 }
