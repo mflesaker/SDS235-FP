@@ -42,7 +42,7 @@ questions <- c(
   "Where online did you first meet your spouse or partner?",
   "Compared to 10 years ago, for most people, do you think dating is...",
   "Is giving a hug acceptable on a first date?",
-  "Is kissing acceptable on a first date?", 
+  "Is kissing acceptable on a first date?",
   "Is having sex acceptable on a first date?",
   "Is sex between unmarried adults who are in a committed relationship acceptable?",
   "Is having an open relationship- that is, a committed relationship where both people agree that it is acceptable to date or have sex with other people acceptable?",
@@ -209,10 +209,10 @@ ui <- fluidPage(
           5,
           strong("About Our Project"),
           htmlOutput("texta2"),
-          
+
           ## https://shiny.rstudio.com/tutorial/written-tutorial/lesson2/ br idea
           br(),
-          
+
           strong("Characterizing the Sample"),
           textOutput("textc")
         ),
@@ -250,7 +250,7 @@ ui <- fluidPage(
         mainPanel(
           conditionalPanel(
             condition = "input.plotType == 'bar'",
-            plotOutput("plotbar")
+            plotlyOutput("plotbar")
           ),
           conditionalPanel(
             condition = "input.plotType == 'count'",
@@ -269,14 +269,13 @@ ui <- fluidPage(
 ## code copied and modified from https://mastering-shiny.org/basic-app.html and
 # https://mastering-shiny.org/basic-ui.html
 server <- function(input, output, session) {
-  output$plotbar <- renderPlot(
-    ggplot(raw_data, aes(x = get(lookup_questions %>%
+  output$plotbar <- renderPlotly(
+    ggplotly(ggplot(raw_data, aes(x = get(lookup_questions %>%
       filter(questions == input$variable1) %>%
       pull(var_names[1])))) +
       geom_bar() +
-      xlab(str_wrap(input$variable1) +
-             scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
-             )
+      xlab(str_wrap(input$variable1)) +
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10)))
   )
 
   output$plotcount <- renderPlot(
@@ -296,42 +295,44 @@ server <- function(input, output, session) {
       ## adding proper x and y labels from
       ## https://web.stanford.edu/~cengel/cgi-bin/anthrospace/building-my-first-shiny-application-with-ggplot
       xlab(str_wrap(input$variable1)) +
-      ylab(str_wrap(input$variable2)) + 
+      ylab(str_wrap(input$variable2)) +
       scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
   )
-#Attempt to build heatmap
+  # Attempt to build heatmap
   output$heatmap <- renderPlot(
     raw_data %>%
       ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
-      group_by_(lookup_questions %>%
-                     filter(questions == input$variable1) %>%
-                     pull(var_names[1]), 
-               lookup_questions %>%
-                     filter(questions == input$variable2) %>%
-                     pull(var_names[1])) %>%
+      group_by_(
+        lookup_questions %>%
+          filter(questions == input$variable1) %>%
+          pull(var_names[1]),
+        lookup_questions %>%
+          filter(questions == input$variable2) %>%
+          pull(var_names[1])
+      ) %>%
       summarize(
         n = n()
       ) %>%
-      ggplot(aes(x = get(lookup_questions %>%
-                           filter(questions == input$variable1) %>%
-                           pull(var_names[1])), 
-                 y = get(lookup_questions %>%
-                           filter(questions == input$variable2) %>%
-                           pull(var_names[1])), 
-                 fill = n)) +
+      ggplot(aes(
+        x = get(lookup_questions %>%
+          filter(questions == input$variable1) %>%
+          pull(var_names[1])),
+        y = get(lookup_questions %>%
+          filter(questions == input$variable2) %>%
+          pull(var_names[1])),
+        fill = n
+      )) +
       geom_tile() +
-      
+
       ## HTML color codes from https://htmlcolorcodes.com/
       ## scale fill gradient idea and syntax from https://ggplot2.tidyverse.org/reference/scale_gradient.html
       scale_fill_gradient(low = "#FFFFFF", high = "#000773", na.value = "#8E8E8E") +
-      
       xlab(str_wrap(input$variable1)) +
-      ylab(str_wrap(input$variable2))+
+      ylab(str_wrap(input$variable2)) +
       ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
       scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
-    
   )
-  
+
   output$static_plot <- renderPlot(
     ggplot(raw_data, aes(x = MARITAL_W56, y = F_PARTY_FINAL)) +
       geom_count() +
@@ -342,12 +343,12 @@ server <- function(input, output, session) {
   output$static_plot2 <- renderPlot(
     ggplot(raw_data, aes(x = MARITAL_W56, y = F_INCOME)) +
       geom_count() +
-      ggtitle("Insert More Interesting Graph Here") + 
+      ggtitle("Insert More Interesting Graph Here") +
       scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
   )
 
-  
-  output$texta2 <-renderUI(HTML("This application provides an analysis of and means to 
+
+  output$texta2 <- renderUI(HTML("This application provides an analysis of and means to 
         interact with data from the 2019 Pew Research Center survey on the 
                            intersection between romantic relationships and technology. The set of participants recruited for the survey, part of the American Trends Panel, were designed to serve as a representative sample of the US (Pew Research Center, 2019). 
                            Download the dataset with a Pew Research Center account and view their 
