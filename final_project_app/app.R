@@ -275,6 +275,7 @@ server <- function(input, output, session) {
       pull(var_names[1])))) +
       geom_bar() +
       xlab(str_wrap(input$variable1)) +
+        ## label code from https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
       scale_x_discrete(labels = function(x) str_wrap(x, width = 10)))
   )
 
