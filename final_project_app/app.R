@@ -253,6 +253,11 @@ ui <- fluidPage(
             condition = "input.plotType == 'bar'",
             plotlyOutput("plotbar")
           ),
+          #Attempt to fix tooltip
+          conditionalPanel(
+            condition = "input.plotType == 'bar'",
+            plotlyOutput("plotbartest")
+          ),
           conditionalPanel(
             condition = "input.plotType == 'count'",
             plotOutput("plotcount"),
@@ -278,9 +283,26 @@ server <- function(input, output, session) {
       xlab(str_wrap(input$variable1)) +
         ## label code from https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
       scale_x_discrete(labels = function(x) str_wrap(x, width = 10)),
-      text= ~paste0("test"),
-      hoverinfo = text)
+      #Tried changing the tooltip text - this doesn't work
+    
+      hoverinfo = ~paste0("test"))
   )
+  
+  #Attempt to change tooltip
+  output$plotbartest <- renderPlotly({
+    r <- ggplot(raw_data, aes(x = get(lookup_questions %>%
+                                        filter(questions == input$variable1) %>%
+                                        pull(var_names[1])))) +
+      geom_bar(text = paste0("test")) +
+      xlab(str_wrap(input$variable1)) +
+      ## label code from https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
+  
+    r <- ggplotly(r)
+    r %>%
+      style(text = paste0("test"))
+  })
+  
 
   output$plotcount <- renderPlot(
     ggplot(raw_data, aes(
