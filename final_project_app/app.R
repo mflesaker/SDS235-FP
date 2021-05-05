@@ -188,8 +188,6 @@ questions <- cbind(questions)
 # Combine variables and questions into df
 lookup_questions <- data.frame(var_names, questions)
 
-
-sameVarPlotError(x, x)
 ## code copied and modified from https://mastering-shiny.org/basic-ui.html (selectInput, plotOutput
 ## idea/syntax)
 ## and https://mastering-shiny.org/action-layout.html (titlePanel, sidebarLayout, sidebarPanel,
