@@ -188,6 +188,8 @@ questions <- cbind(questions)
 # Combine variables and questions into df
 lookup_questions <- data.frame(var_names, questions)
 
+
+sameVarPlotError(x, x)
 ## code copied and modified from https://mastering-shiny.org/basic-ui.html (selectInput, plotOutput
 ## idea/syntax)
 ## and https://mastering-shiny.org/action-layout.html (titlePanel, sidebarLayout, sidebarPanel,
@@ -303,6 +305,7 @@ server <- function(input, output, session) {
   
 
   output$plotcount <- renderPlot(
+    if(input$variable1 != input$variable2){
     ggplot(raw_data, aes(
       x = get(lookup_questions %>%
         filter(questions == input$variable1) %>%
@@ -321,9 +324,14 @@ server <- function(input, output, session) {
       xlab(str_wrap(input$variable1)) +
       ylab(str_wrap(input$variable2)) +
       scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
+    } else{
+      
+    }
   )
   # Attempt to build heatmap
   output$heatmap <- renderPlotly({
+    if(input$variable1 != input$variable2){
+      
    g <- raw_data %>%
       ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
       group_by_(
@@ -361,6 +369,35 @@ server <- function(input, output, session) {
    ## and
    ## https://www.rdocumentation.org/packages/plotly/versions/4.9.3/topics/ggplotly
    ggplotly(g, tooltip = "fill")
+    }
+    else{
+      g <- raw_data %>%
+        ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
+        group_by_(
+          lookup_questions %>%
+            filter(questions == input$variable1) %>%
+            pull(var_names[1])) %>%
+        summarize(
+          n = n()
+        ) %>%
+        ggplot(aes(
+          x = get(lookup_questions %>%
+                    filter(questions == input$variable1) %>%
+                    pull(var_names[1])),
+          y = n
+        )) +
+        geom_col() +
+        
+        xlab(str_wrap(input$variable1)) +
+        ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
+        scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
+      
+      ## tooltip from 
+      ## https://stackoverflow.com/questions/40598011/how-to-customize-hover-information-in-ggplotly-object/40598524
+      ## and
+      ## https://www.rdocumentation.org/packages/plotly/versions/4.9.3/topics/ggplotly
+      ggplotly(g, tooltip = "y")
+    }
   })
 
   output$static_plot <- renderPlot(
