@@ -191,14 +191,73 @@ lookup_questions <- data.frame(var_names, questions)
 
 
 ```{r}
-raw_data %>%
-  group_by(MARITAL_W56, F_IDEO) %>%
+total_asked <- raw_data %>%
+  select(
+        lookup_questions %>%
+          filter(questions == "How important is it to you that online profiles included religious beliefs?") %>%
+          pull(var_names[1])) %>%
   summarize(
-    n = n()
+        n = n(),
+        
+        ## count NAs https://stackoverflow.com/questions/44290704/count-non-na-values-by-group
+        num_not_na = sum(!is.na(get(lookup_questions %>%
+          filter(questions == "How important is it to you that online profiles included religious beliefs?") %>%
+          pull(var_names[1]))))
   ) %>%
-  ggplot(aes(x = MARITAL_W56, y = F_IDEO, fill = n)) +
-  geom_tile()
+  pull(num_not_na[1])
 
+total_people <- raw_data %>%
+  select(
+        lookup_questions %>%
+          filter(questions == "How important is it to you that online profiles included religious beliefs?") %>%
+          pull(var_names[1])) %>%
+  summarize(
+        n = n(),
+        
+        ## count NAs https://stackoverflow.com/questions/44290704/count-non-na-values-by-group
+        num_not_na = sum(!is.na(get(lookup_questions %>%
+          filter(questions == "How important is it to you that online profiles included religious beliefs?") %>%
+          pull(var_names[1]))))
+  ) %>%
+  pull(n[1]) 
+
+g <- ggplot(raw_data %>%
+              
+              ## remove NAs https://www.edureka.co/community/634/how-to-remove-na-values-with-dplyr-filter
+      filter(!is.na(get(lookup_questions %>%
+          filter(questions == "How important is it to you that online profiles included religious beliefs?") %>%
+          pull(var_names[1])))) %>%
+      group_by_(
+        lookup_questions %>%
+          filter(questions == "How important is it to you that online profiles included religious beliefs?") %>%
+          pull(var_names[1])) %>%
+      summarize(
+        n = n(),
+        num_not_na = sum(!is.na(get(lookup_questions %>%
+          filter(questions == "How important is it to you that online profiles included religious beliefs?") %>%
+          pull(var_names[1]))))
+      ), aes(
+        x = get(lookup_questions %>%
+                  filter(questions == "How important is it to you that online profiles included religious beliefs?") %>%
+                  pull(var_names[1])),
+        y = n
+      )) +
+      geom_col() +
+      
+      xlab(str_wrap("Education")) +
+      ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+      geom_text(aes(x = length(levels(get(lookup_questions %>%
+                  filter(questions == "How important is it to you that online profiles included religious beliefs?") %>%
+                  pull(var_names[1])))) + 2, y = (1.1*max(n)), label = paste(paste(total_asked, total_people, sep = "/"), "total participants were asked this question", sep = " ")),
+                 hjust = 1, vjust = -1)
+    
+    ## tooltip from 
+    ## https://stackoverflow.com/questions/40598011/how-to-customize-hover-information-in-ggplotly-object/40598524
+    ## and
+    ## https://www.rdocumentation.org/packages/plotly/versions/4.9.3/topics/ggplotly
+
+ggplotly(g, tooltip = "y")
 ```
 
 
