@@ -255,16 +255,11 @@ ui <- fluidPage(
             # from https://stackoverflow.com/questions/57085342/renderplotly-does-not-work-despite-not-having-any-errors
             plotlyOutput("plotbar")
           ),
-          #Attempt to fix tooltip
-          conditionalPanel(
-            condition = "input.plotType == 'bar'",
-            plotlyOutput("plotbartest")
-          ),
           conditionalPanel(
             condition = "input.plotType == 'count'",
-            plotOutput("plotcount"),
+            plotlyOutput("heatmap"),
             br(),
-            plotOutput("heatmap")
+            plotOutput("plotcount")
           )
         )
       )
@@ -277,32 +272,33 @@ ui <- fluidPage(
 ## code copied and modified from https://mastering-shiny.org/basic-app.html and
 # https://mastering-shiny.org/basic-ui.html
 server <- function(input, output, session) {
-  output$plotbar <- renderPlotly(
-    ggplotly(ggplot(raw_data, aes(x = get(lookup_questions %>%
-      filter(questions == input$variable1) %>%
-      pull(var_names[1])))) +
-      geom_bar(text = paste0("test")) +
+  output$plotbar <- renderPlotly({
+    g <- raw_data %>%
+      ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
+      group_by_(
+        lookup_questions %>%
+          filter(questions == input$variable1) %>%
+          pull(var_names[1])) %>%
+      summarize(
+        n = n()
+      ) %>%
+      ggplot(aes(
+        x = get(lookup_questions %>%
+                  filter(questions == input$variable1) %>%
+                  pull(var_names[1])),
+        y = n
+      )) +
+      geom_col() +
+      
       xlab(str_wrap(input$variable1)) +
-        ## label code from https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
-      scale_x_discrete(labels = function(x) str_wrap(x, width = 10)),
-      #Tried changing the tooltip text - this doesn't work
-    
-      hoverinfo = ~paste0("test"))
-  )
-  
-  #Attempt to change tooltip
-  output$plotbartest <- renderPlotly({
-    r <- ggplot(raw_data, aes(x = get(lookup_questions %>%
-                                        filter(questions == input$variable1) %>%
-                                        pull(var_names[1])))) +
-      geom_bar(text = paste0("test")) +
-      xlab(str_wrap(input$variable1)) +
-      ## label code from https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
+      ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
       scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
-  
-    r <- ggplotly(r)
-    r %>%
-      style(text = paste0("test"))
+    
+    ## tooltip from 
+    ## https://stackoverflow.com/questions/40598011/how-to-customize-hover-information-in-ggplotly-object/40598524
+    ## and
+    ## https://www.rdocumentation.org/packages/plotly/versions/4.9.3/topics/ggplotly
+    ggplotly(g, tooltip = "y")
   })
   
 
@@ -327,8 +323,8 @@ server <- function(input, output, session) {
       scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
   )
   # Attempt to build heatmap
-  output$heatmap <- renderPlot(
-    raw_data %>%
+  output$heatmap <- renderPlotly({
+   g <- raw_data %>%
       ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
       group_by_(
         lookup_questions %>%
@@ -359,7 +355,13 @@ server <- function(input, output, session) {
       ylab(str_wrap(input$variable2)) +
       ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
       scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
-  )
+   
+   ## tooltip from 
+   ## https://stackoverflow.com/questions/40598011/how-to-customize-hover-information-in-ggplotly-object/40598524
+   ## and
+   ## https://www.rdocumentation.org/packages/plotly/versions/4.9.3/topics/ggplotly
+   ggplotly(g, tooltip = "fill")
+  })
 
   output$static_plot <- renderPlot(
     ggplot(raw_data, aes(x = MARITAL_W56, y = F_PARTY_FINAL)) +
