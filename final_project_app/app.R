@@ -250,6 +250,8 @@ ui <- fluidPage(
         mainPanel(
           conditionalPanel(
             condition = "input.plotType == 'bar'",
+            # plotlyOutput and renderPlotly
+            # from https://stackoverflow.com/questions/57085342/renderplotly-does-not-work-despite-not-having-any-errors
             plotlyOutput("plotbar")
           ),
           conditionalPanel(
