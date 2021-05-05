@@ -237,7 +237,7 @@ ui <- fluidPage(
           ## code for this conditional panel is directly copied and pasted from
           ## the example at https://shiny.rstudio.com/reference/shiny/1.3.0/conditionalPanel.html -----------
 
-          selectInput(inputId = "plotType", label = "Plot Type", c(Bar = "bar", Count = "count"), selected = "bar"),
+          selectInput(inputId = "plotType", label = "Plot Type", c(Bar = "bar", Heatmap = "count"), selected = "bar"),
           # Only show this panel if the plot type is a two-way count
           conditionalPanel(
             condition = "input.plotType == 'count'",
@@ -253,13 +253,16 @@ ui <- fluidPage(
             condition = "input.plotType == 'bar'",
             # plotlyOutput and renderPlotly
             # from https://stackoverflow.com/questions/57085342/renderplotly-does-not-work-despite-not-having-any-errors
-            plotlyOutput("plotbar")
+            plotlyOutput("plotbar"),
+            textOutput("textbox"),
+            br(),
+            textOutput("textboxtwo")
           ),
           conditionalPanel(
             condition = "input.plotType == 'count'",
             plotlyOutput("heatmap"),
-            br(),
-            plotOutput("plotcount")
+            textOutput("heatmaptextboxone"),
+            textOutput("heatmaptextboxtwo")
           )
         )
       )
@@ -273,21 +276,27 @@ ui <- fluidPage(
 # https://mastering-shiny.org/basic-ui.html
 server <- function(input, output, session) {
   output$plotbar <- renderPlotly({
-    g <- raw_data %>%
-      ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
-      group_by_(
-        lookup_questions %>%
-          filter(questions == input$variable1) %>%
-          pull(var_names[1])) %>%
-      summarize(
-        n = n()
-      ) %>%
-      ggplot(aes(
-        x = get(lookup_questions %>%
-                  filter(questions == input$variable1) %>%
-                  pull(var_names[1])),
-        y = n
-      )) +
+    g <- ggplot(raw_data %>%
+                  
+                  ## remove NAs https://www.edureka.co/community/634/how-to-remove-na-values-with-dplyr-filter
+                  filter(!is.na(get(lookup_questions %>%
+                                      filter(questions == input$variable1) %>%
+                                      pull(var_names[1])))) %>%
+                  group_by_(
+                    lookup_questions %>%
+                      filter(questions == input$variable1) %>%
+                      pull(var_names[1])) %>%
+                  summarize(
+                    n = n(),
+                    num_not_na = sum(!is.na(get(lookup_questions %>%
+                                                  filter(questions == input$variable1) %>%
+                                                  pull(var_names[1]))))
+                  ), aes(
+                    x = get(lookup_questions %>%
+                              filter(questions == input$variable1) %>%
+                              pull(var_names[1])),
+                    y = n
+                  )) +
       geom_col() +
       
       xlab(str_wrap(input$variable1)) +
@@ -298,9 +307,54 @@ server <- function(input, output, session) {
     ## https://stackoverflow.com/questions/40598011/how-to-customize-hover-information-in-ggplotly-object/40598524
     ## and
     ## https://www.rdocumentation.org/packages/plotly/versions/4.9.3/topics/ggplotly
+    
     ggplotly(g, tooltip = "y")
   })
   
+  output$textbox <- renderText({
+    total_asked <- raw_data %>%
+      select(
+        lookup_questions %>%
+          filter(questions == input$variable1) %>%
+          pull(var_names[1])) %>%
+      summarize(
+        n = n(),
+        
+        ## count NAs https://stackoverflow.com/questions/44290704/count-non-na-values-by-group
+        num_not_na = sum(!is.na(get(lookup_questions %>%
+                                      filter(questions == input$variable1) %>%
+                                      pull(var_names[1]))))
+      ) %>%
+      pull(num_not_na[1])
+    
+    total_people <- raw_data %>%
+      select(
+        lookup_questions %>%
+          filter(questions == input$variable1) %>%
+          pull(var_names[1])) %>%
+      summarize(
+        n = n(),
+        
+        ## count NAs https://stackoverflow.com/questions/44290704/count-non-na-values-by-group
+        num_not_na = sum(!is.na(get(lookup_questions %>%
+                                      filter(questions == input$variable1) %>%
+                                      pull(var_names[1]))))
+      ) %>%
+      pull(n[1])
+    
+    text <- paste("Note:", 
+             paste(
+                paste(total_asked, total_people, sep = "/"), 
+                "participants were asked this question."), sep = " ")
+  })
+  
+  
+  output$textboxtwo <- renderText(
+    "Whether or not participants
+    were asked certain questions was often conditional on previous 
+    responses. For example, only those who are married were not asked
+    whether they were in a committed relationship"
+  )
 
   output$plotcount <- renderPlot(
     if(input$variable1 != input$variable2){
@@ -327,10 +381,17 @@ server <- function(input, output, session) {
     }
   )
   # Attempt to build heatmap
+  
   output$heatmap <- renderPlotly({
     if(input$variable1 != input$variable2){
       
    g <- raw_data %>%
+     filter(!is.na(get(lookup_questions %>%
+                         filter(questions == input$variable1) %>%
+                         pull(var_names[1])))) %>%
+     filter(!is.na(get(lookup_questions %>%
+                         filter(questions == input$variable2) %>%
+                         pull(var_names[1])))) %>%
       ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
       group_by_(
         lookup_questions %>%
@@ -397,6 +458,83 @@ server <- function(input, output, session) {
       ggplotly(g, tooltip = "y")
     }
   })
+  
+  output$heatmaptextboxone <- renderText({
+    total_asked <- raw_data %>%
+      select(
+        lookup_questions %>%
+          filter(questions == input$variable1) %>%
+          pull(var_names[1])) %>%
+      summarize(
+        n = n(),
+        
+        ## count NAs https://stackoverflow.com/questions/44290704/count-non-na-values-by-group
+        num_not_na = sum(!is.na(get(lookup_questions %>%
+                                      filter(questions == input$variable1) %>%
+                                      pull(var_names[1]))))
+      ) %>%
+      pull(num_not_na[1])
+    
+    total_people <- raw_data %>%
+      select(
+        lookup_questions %>%
+          filter(questions == input$variable1) %>%
+          pull(var_names[1])) %>%
+      summarize(
+        n = n(),
+        
+        ## count NAs https://stackoverflow.com/questions/44290704/count-non-na-values-by-group
+        num_not_na = sum(!is.na(get(lookup_questions %>%
+                                      filter(questions == input$variable1) %>%
+                                      pull(var_names[1]))))
+      ) %>%
+      pull(n[1])
+    
+    text <- paste(paste("Note:", 
+                  paste(
+                    paste(total_asked, total_people, sep = "/"), 
+                    "participants were asked"), sep = " "), str_wrap(input$variable1))
+  })
+  
+  
+  output$heatmaptextboxtwo <- renderText({
+    total_asked <- raw_data %>%
+      select(
+        lookup_questions %>%
+          filter(questions == input$variable2) %>%
+          pull(var_names[1])) %>%
+      summarize(
+        n = n(),
+        
+        ## count NAs https://stackoverflow.com/questions/44290704/count-non-na-values-by-group
+        num_not_na = sum(!is.na(get(lookup_questions %>%
+                                      filter(questions == input$variable2) %>%
+                                      pull(var_names[1]))))
+      ) %>%
+      pull(num_not_na[1])
+    
+    total_people <- raw_data %>%
+      select(
+        lookup_questions %>%
+          filter(questions == input$variable2) %>%
+          pull(var_names[1])) %>%
+      summarize(
+        n = n(),
+        
+        ## count NAs https://stackoverflow.com/questions/44290704/count-non-na-values-by-group
+        num_not_na = sum(!is.na(get(lookup_questions %>%
+                                      filter(questions == input$variable2) %>%
+                                      pull(var_names[1]))))
+      ) %>%
+      pull(n[1])
+    
+    text <- paste(paste("Note:", 
+                        paste(
+                          paste(total_asked, total_people, sep = "/"), 
+                          "participants were asked"), sep = " "), str_wrap(input$variable2))
+  })
+  
+  
 
   output$static_plot <- renderPlot(
     ggplot(raw_data, aes(x = MARITAL_W56, y = F_PARTY_FINAL)) +
