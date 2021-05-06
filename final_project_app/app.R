@@ -215,7 +215,13 @@ ui <- fluidPage(
           br(),
 
           strong("Characterizing the Sample"),
-          textOutput("textc")
+          textOutput("textc"),
+          
+          hr(),
+          
+          strong("References"),
+          htmlOutput("citations_textone"),
+          htmlOutput("citations_texttwo")
         ),
         column(
           7,
@@ -230,7 +236,7 @@ ui <- fluidPage(
       "Interactive Dashboard",
       sidebarLayout(
         sidebarPanel(
-
+          
           ## selected = idea and syntax from https://shiny.rstudio.com/reference/shiny/0.12.2/selectInput.html
           selectInput(inputId = "variable1", label = "Choose a first variable", selected = "Current Committed Relationship Status", lookup_questions$questions),
 
@@ -242,7 +248,9 @@ ui <- fluidPage(
           conditionalPanel(
             condition = "input.plotType == 'count'",
             selectInput(inputId = "variable2", label = "Choose a second variable", selected = "Region of the US they reside in", lookup_questions$questions),
-          )
+          ),
+          
+          textOutput("disclaimer_text")
         ),
 
         ### ---------------------------------------------------------------------------------------
@@ -254,6 +262,7 @@ ui <- fluidPage(
             # plotlyOutput and renderPlotly
             # from https://stackoverflow.com/questions/57085342/renderplotly-does-not-work-despite-not-having-any-errors
             plotlyOutput("plotbar"),
+            br(),
             textOutput("textbox"),
             br(),
             textOutput("textboxtwo")
@@ -261,8 +270,11 @@ ui <- fluidPage(
           conditionalPanel(
             condition = "input.plotType == 'count'",
             plotlyOutput("heatmap"),
+            br(),
             textOutput("heatmaptextboxone"),
-            textOutput("heatmaptextboxtwo")
+            textOutput("heatmaptextboxtwo"),
+            br(),
+            textOutput("textboxtwotwo")
           )
         )
       )
@@ -356,33 +368,16 @@ server <- function(input, output, session) {
     "Whether or not participants
     were asked certain questions was often conditional on previous 
     responses. For example, only those who are married were not asked
-    whether they were in a committed relationship"
+    whether they were in a committed relationship."
+  )
+  
+  output$textboxtwotwo <- renderText(
+    "Whether or not participants
+    were asked certain questions was often conditional on previous 
+    responses. For example, only those who are married were not asked
+    whether they were in a committed relationship."
   )
 
-  output$plotcount <- renderPlot(
-    if(input$variable1 != input$variable2){
-    ggplot(raw_data, aes(
-      x = get(lookup_questions %>%
-        filter(questions == input$variable1) %>%
-        pull(var_names[1])),
-      y = get(lookup_questions %>%
-        filter(questions == input$variable2) %>%
-        pull(var_names[1]))
-    )) +
-
-      ## geom_count idea and syntax from
-      ## http://r-statistics.co/Top50-Ggplot2-Visualizations-MasterList-R-Code.html
-      geom_count() +
-
-      ## adding proper x and y labels from
-      ## https://web.stanford.edu/~cengel/cgi-bin/anthrospace/building-my-first-shiny-application-with-ggplot
-      xlab(str_wrap(input$variable1)) +
-      ylab(str_wrap(input$variable2)) +
-      scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
-    } else{
-      
-    }
-  )
   # Attempt to build heatmap
   
   output$heatmap <- renderPlotly({
@@ -538,7 +533,22 @@ server <- function(input, output, session) {
   })
   
   
-
+  output$disclaimer_text <- renderText(
+    "Disclaimer: Some question text was changed for clarity or conciseness"
+  )
+  
+  output$citations_textone <- renderUI(HTML(
+    "Vogels, E. A., & Anderson, M. (2020, May 8). 
+    Dating and Relationships in the Digital Age. Pew Research Center. <a href ='https://www.pewresearch.org/internet/2020/05/08/dating-and-relationships-in-the-digital-age/'>Link to the data</a>."
+  ))
+  
+  output$citations_texttwo <- renderUI(HTML(
+    "Pew Research Center. (2019). 
+    Pew Research Center’s American Trends Panel Wave 56 Methodology Report. 
+    Downloaded as metadata alongside the data from <a href ='https://www.pewresearch.org/internet/2020/05/08/dating-and-relationships-in-the-digital-age/'>this link</a>"
+  ))
+  
+  
   output$static_plot <- renderPlot(
     ggplot(raw_data, aes(x = MARITAL_W56, y = F_PARTY_FINAL)) +
       geom_count() +
