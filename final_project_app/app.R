@@ -217,6 +217,7 @@ ui <- fluidPage(
           strong("Characterizing the Sample"),
           textOutput("textc"),
           
+          ## footer hr() from https://stackoverflow.com/questions/30205034/shiny-layout-how-to-add-footer-disclaimer/38241035
           hr(),
           
           strong("References"),
@@ -327,12 +328,14 @@ server <- function(input, output, session) {
     ## and
     ## https://www.rdocumentation.org/packages/plotly/versions/4.9.3/topics/ggplotly
     
-    ggplotly(g, tooltip = "y") #%>%
-      #Attempt to fix overlapping axis and variable labels, doesn't work
-      #layout(
-       # xaxis = list(margin = list(l=80)),
-        #yaxis = list(automargin = T)
-      #)
+    ggplotly(g, tooltip = "y") %>%
+      
+      ## margin idea and syntax from https://plotly.com/r/setting-graph-size/
+    layout(margin = list(l = 10,
+                         r = 10,
+                         b = 10,
+                         t = 10,
+                         pad = 20))
   })
   
   output$textbox <- renderText({
