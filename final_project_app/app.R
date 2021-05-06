@@ -304,14 +304,23 @@ server <- function(input, output, session) {
       scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
       scale_y_continuous(expand = c(0,0)) +
       theme(panel.background = element_blank(), axis.ticks = element_blank(), 
-            axis.line = element_line(color = "black"))
-    
+            axis.line = element_line(color = "black"),
+            #Attempt to fix margin - does not work
+            #axis.title.x = element_text(margin = margin(t = 20, r = 0, b = 20, l = 0)))
+            #This does not work either:
+    axis.title.x = element_text(vjust = 1))
+  
     ## tooltip from 
     ## https://stackoverflow.com/questions/40598011/how-to-customize-hover-information-in-ggplotly-object/40598524
     ## and
     ## https://www.rdocumentation.org/packages/plotly/versions/4.9.3/topics/ggplotly
     
-    ggplotly(g, tooltip = "y")
+    ggplotly(g, tooltip = "y") #%>%
+      #Attempt to fix overlapping axis and variable labels, doesn't work
+      #layout(
+       # xaxis = list(margin = list(l=80)),
+        #yaxis = list(automargin = T)
+      #)
   })
   
   output$textbox <- renderText({
