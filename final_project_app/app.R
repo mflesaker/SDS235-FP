@@ -562,9 +562,11 @@ server <- function(input, output, session) {
   
   
   output$static_plot <- renderPlot(
-    ggplot(raw_data, aes(x = MARITAL_W56, y = F_PARTY_FINAL)) +
+    ggplot(raw_data, aes(x = MARITAL_W56, y = F_RACETHN)) +
       geom_count() +
-      ggtitle("Insert More Interesting Graph Here") +
+      ggtitle("Sample Categorized by Relationship Status and Race/Ethnicity") +
+      xlab("Relationship Status")+
+      ylab("Race/Ethnicity")+
       scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
   )
 
