@@ -336,7 +336,7 @@ ui <- fluidPage(
 # https://mastering-shiny.org/basic-ui.html
 server <- function(input, output, session) {
   output$plotbar <- renderPlotly({
-    g <- ggplot(raw_data %>%
+    g <- ggplot((raw_data %>%
                   
                   ## remove NAs https://www.edureka.co/community/634/how-to-remove-na-values-with-dplyr-filter
                   filter(!is.na(get(lookup_questions %>%
@@ -348,11 +348,15 @@ server <- function(input, output, session) {
                       pull(var_names[1])) %>%
                   summarize(
                     n = n(),
-                  ), aes(
+                  ) %>%
+                   mutate(
+                     pct = n/sum(n)
+                   )), aes(
                     x = get(lookup_questions %>%
                               filter(questions == input$variable1) %>%
                               pull(var_names[1])),
-                    y = n
+                    y = n,
+                    text = paste(paste("Number of Participants:", n, sep = " "), paste("Percentage:", paste(100*round(pct, digits = 2), "%", sep = ""), sep = " "), sep = "<br>")
                   )) +
       geom_col() +
       
@@ -372,7 +376,7 @@ server <- function(input, output, session) {
     ## and
     ## https://www.rdocumentation.org/packages/plotly/versions/4.9.3/topics/ggplotly
     
-    ggplotly(g, tooltip = "y")
+    ggplotly(g, tooltip = "text")
   })
   
   output$textbox <- renderText({
@@ -644,6 +648,7 @@ server <- function(input, output, session) {
             axis.line = element_line(color = "black"),
             axis.title.x = element_text(vjust = 1))
     
+    ## tooltip = "text" with text specified above idea from https://plotly.com/ggplot2/interactive-tooltip/
     ggplotly(g, tooltip = 'text')
   })
   
