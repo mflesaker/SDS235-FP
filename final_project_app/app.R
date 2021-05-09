@@ -255,26 +255,55 @@ ui <- fluidPage(
       fluidRow(
         column(
           12,
-          strong("About Our Project"),
+          ## h3 from https://shiny.rstudio.com/tutorial/written-tutorial/lesson2/
+          h3("About Our Project"),
           htmlOutput("texta2"),
 
           ## https://shiny.rstudio.com/tutorial/written-tutorial/lesson2/ br idea
           br(),
 
-          strong("Characterizing the Sample"),
+          h3("Characterizing the Sample"),
           textOutput("textc"),
+          br(),
           fluidRow(
-            column(6,
-          plotlyOutput("characterizingsamplemstatus")),
-          column(6,
-          plotlyOutput("characterizingsampleorientation")
-            )
+            column(1),
+            column(5,
+          plotlyOutput("characterizingsamplemstatus"),
+          br(),
+          br()),
+          column(5,
+          plotlyOutput("characterizingsampleorientation"),
+          br(),
+          br()
+            ),
+          column(1),
+          ),
+          fluidRow(
+            column(1),
+            column(5,
+                   plotlyOutput("characterizingsampleideology"),
+                   br(),
+                   br()),
+            column(5,
+                   plotlyOutput("characterizingsamplerace"),
+                   br(),
+                   br()),
+            column(1)
+          ),
+          fluidRow(
+            column(1),
+            column(5,
+                   plotlyOutput("characterizingsampleage")),
+            column(5,
+                   plotlyOutput("characterizingsampleeduc")),
+            column(1)
           )
+          
         )),
         fluidRow(
           column(
           12,
-          strong("Interesting Findings"),
+          h3("Interesting Findings"),
           textOutput("textb"),
           fluidRow(
             column(6,
@@ -290,7 +319,7 @@ ui <- fluidPage(
           ## footer hr() from https://stackoverflow.com/questions/30205034/shiny-layout-how-to-add-footer-disclaimer/38241035 
           hr(),
           
-          strong("References"),
+          h4("References"),
           htmlOutput("citations_textone"),
           htmlOutput("citations_texttwo"),
           br()
@@ -343,14 +372,7 @@ server <- function(input, output, session) {
     ## and
     ## https://www.rdocumentation.org/packages/plotly/versions/4.9.3/topics/ggplotly
     
-    ggplotly(g, tooltip = "y") %>%
-      
-      ## margin idea and syntax from https://plotly.com/r/setting-graph-size/
-    layout(margin = list(l = 10,
-                         r = 10,
-                         b = 10,
-                         t = 10,
-                         pad = 20))
+    ggplotly(g, tooltip = "y")
   })
   
   output$textbox <- renderText({
@@ -599,7 +621,7 @@ server <- function(input, output, session) {
                            Download the dataset with a Pew Research Center account and view their 
                            analysis <a href ='https://www.pewresearch.org/internet/2020/05/08/dating-and-relationships-in-the-digital-age/'>here</a> (Vogels & Anderson, 2020)."))
   output$textb <- renderText("Put what we find from the interesting findings as a summary here")
-  output$textc <- renderText("This sample is largely married (40%), straight (68%), politically moderate (___%) or liberal (__%), non-Hispanic white (___%), and ages 30-64 (_%) with a college degree or higher (___%).")
+  output$textc <- renderText("This sample is largely married (40%), straight (68%), politically moderate (35%) or liberal (26%), non-Hispanic white (68%), and ages 30-64 (64%) with a college degree or higher (46%).")
 
   output$characterizingsamplemstatus <- renderPlotly({
     g <- raw_data %>%
@@ -610,10 +632,12 @@ server <- function(input, output, session) {
       mutate(
         pct = n/sum(n)
       ) %>%
+      # reorder from https://sebastiansauer.github.io/ordering-bars/
       ggplot(aes(x = reorder(MARITAL_W56, -n), y = n, text = paste("Percent of Total:", paste(100*round(pct, digits = 2), "%", sep = ""), sep = " "))) +
       geom_col() +
       xlab("Marital Status") +
       ylab("Number of Participants") +
+      ggtitle("Number of Participants by Marital Status") +
       scale_y_continuous(expand = c(0,0)) +
       scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
       theme(panel.background = element_blank(), axis.ticks = element_blank(), 
@@ -632,9 +656,110 @@ server <- function(input, output, session) {
       mutate(
         pct = n/sum(n)
       ) %>%
+      # reorder from https://sebastiansauer.github.io/ordering-bars/
       ggplot(aes(x = reorder(ORIENTATIONMOD_W56, -n), y = n, text = paste("Percent of Total:", paste(100*round(pct, digits = 2), "%", sep = ""), sep = " "))) +
       geom_col() +
       xlab("Sexual Orientation") +
+      ggtitle("Number of Participants by Sexual Orientation") +
+      ylab("Number of Participants") +
+      scale_y_continuous(expand = c(0,0)) +
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+      theme(panel.background = element_blank(), axis.ticks = element_blank(), 
+            axis.line = element_line(color = "black"),
+            axis.title.x = element_text(vjust = 1))
+    
+    ggplotly(g, tooltip = 'text')
+  })
+  
+  output$characterizingsampleideology <- renderPlotly({
+    ## reorder from https://sebastiansauer.github.io/ordering-bars/
+    raw_data$F_IDEO <- factor(raw_data$F_IDEO,levels = c("Very conservative", "Conservative", "Moderate", "Liberal", "Very liberal", "Refused"))
+    
+    g <- raw_data %>%
+      group_by(F_IDEO) %>%
+      summarize(
+        n = n()
+      ) %>% 
+      mutate(
+        pct = n/sum(n)
+      ) %>%
+      ggplot(aes(x = F_IDEO, y = n, text = paste("Percent of Total:", paste(100*round(pct, digits = 2), "%", sep = ""), sep = " "))) +
+      geom_col() +
+      xlab("Political Ideology") +
+      ggtitle("Number of Participants by Political Ideology") +
+      ylab("Number of Participants") +
+      scale_y_continuous(expand = c(0,0)) +
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+      theme(panel.background = element_blank(), axis.ticks = element_blank(), 
+            axis.line = element_line(color = "black"),
+            axis.title.x = element_text(vjust = 1))
+    
+    ggplotly(g, tooltip = 'text')
+  })
+  
+  output$characterizingsamplerace <- renderPlotly({
+    g <- raw_data %>%
+      group_by(F_RACETHN) %>%
+      summarize(
+        n = n()
+      ) %>% 
+      mutate(
+        pct = n/sum(n)
+      ) %>%
+      ggplot(aes(x = F_RACETHN, y = n, text = paste("Percent of Total:", paste(100*round(pct, digits = 2), "%", sep = ""), sep = " "))) +
+      geom_col() +
+      xlab("Race/Ethnicity") +
+      ggtitle("Number of Participants by Race/Ethnicity") +
+      ylab("Number of Participants") +
+      scale_y_continuous(expand = c(0,0)) +
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+      theme(panel.background = element_blank(), axis.ticks = element_blank(), 
+            axis.line = element_line(color = "black"),
+            axis.title.x = element_text(vjust = 1))
+    
+    ggplotly(g, tooltip = 'text')
+  })
+  
+  output$characterizingsampleage <- renderPlotly({
+    g <- raw_data %>%
+      group_by(F_AGECAT) %>%
+      summarize(
+        n = n()
+      ) %>% 
+      mutate(
+        pct = n/sum(n)
+      ) %>%
+      ggplot(aes(x = F_AGECAT, y = n, text = paste("Percent of Total:", paste(100*round(pct, digits = 2), "%", sep = ""), sep = " "))) +
+      geom_col() +
+      xlab("Age") +
+      ggtitle("Number of Participants by Age") +
+      ylab("Number of Participants") +
+      scale_y_continuous(expand = c(0,0)) +
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+      theme(panel.background = element_blank(), axis.ticks = element_blank(), 
+            axis.line = element_line(color = "black"),
+            axis.title.x = element_text(vjust = 1))
+    
+    ggplotly(g, tooltip = 'text')
+  })
+  
+  output$characterizingsampleeduc <- renderPlotly({
+    ## reorder from https://sebastiansauer.github.io/ordering-bars/
+    raw_data$F_EDUCCAT <- factor(raw_data$F_EDUCCAT,levels = c("H.S. graduate or less", "Some College", "College graduate+", "Don't know/Refused"))
+    
+    
+    g <- raw_data %>%
+      group_by(F_EDUCCAT) %>%
+      summarize(
+        n = n()
+      ) %>% 
+      mutate(
+        pct = n/sum(n)
+      ) %>%
+      ggplot(aes(x = F_EDUCCAT, y = n, text = paste("Percent of Total:", paste(100*round(pct, digits = 2), "%", sep = ""), sep = " "))) +
+      geom_col() +
+      xlab("Education Level") +
+      ggtitle("Number of Participants by Education") +
       ylab("Number of Participants") +
       scale_y_continuous(expand = c(0,0)) +
       scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
