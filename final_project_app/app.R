@@ -276,13 +276,18 @@ ui <- fluidPage(
           12,
           strong("Interesting Findings"),
           textOutput("textb"),
-          plotOutput("static_plot"),
-          plotOutput("static_plot2")
+          fluidRow(
+            column(6,
+          plotOutput("static_plot")),
+            column(6,
+          plotOutput("static_plot2"))
+          )
         )
         ),
       fluidRow(
         column(
           12,
+          ## footer hr() from https://stackoverflow.com/questions/30205034/shiny-layout-how-to-add-footer-disclaimer/38241035 
           hr(),
           
           strong("References"),
