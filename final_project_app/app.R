@@ -254,7 +254,7 @@ ui <- fluidPage(
       "Static Data Analysis",
       fluidRow(
         column(
-          5,
+          12,
           strong("About Our Project"),
           htmlOutput("texta2"),
 
@@ -263,25 +263,38 @@ ui <- fluidPage(
 
           strong("Characterizing the Sample"),
           textOutput("textc"),
-          
-          ## footer hr() from https://stackoverflow.com/questions/30205034/shiny-layout-how-to-add-footer-disclaimer/38241035
-          hr(),
-          
-          strong("References"),
-          htmlOutput("citations_textone"),
-          htmlOutput("citations_texttwo")
-        ),
-        column(
-          7,
+          fluidRow(
+            column(6,
+          plotlyOutput("characterizingsamplemstatus")),
+          column(6,
+          plotlyOutput("characterizingsampleorientation")
+            )
+          )
+        )),
+        fluidRow(
+          column(
+          12,
           strong("Interesting Findings"),
           textOutput("textb"),
           plotOutput("static_plot"),
           plotOutput("static_plot2")
         )
+        ),
+      fluidRow(
+        column(
+          12,
+          hr(),
+          
+          strong("References"),
+          htmlOutput("citations_textone"),
+          htmlOutput("citations_texttwo"),
+          br()
+        )
+      )
       )
     )
   )
-)
+
 
 
 
@@ -301,9 +314,6 @@ server <- function(input, output, session) {
                       pull(var_names[1])) %>%
                   summarize(
                     n = n(),
-                    num_not_na = sum(!is.na(get(lookup_questions %>%
-                                                  filter(questions == input$variable1) %>%
-                                                  pull(var_names[1]))))
                   ), aes(
                     x = get(lookup_questions %>%
                               filter(questions == input$variable1) %>%
@@ -584,7 +594,52 @@ server <- function(input, output, session) {
                            Download the dataset with a Pew Research Center account and view their 
                            analysis <a href ='https://www.pewresearch.org/internet/2020/05/08/dating-and-relationships-in-the-digital-age/'>here</a> (Vogels & Anderson, 2020)."))
   output$textb <- renderText("Put what we find from the interesting findings as a summary here")
-  output$textc <- renderText("This sample is largely married or living with a partner (__%), straight (__%), politically moderate (___%) or liberal (__%), non-Hispanic white (___%), and ages 30-64 (_%) with a college degree or higher (___%).")
+  output$textc <- renderText("This sample is largely married (40%), straight (68%), politically moderate (___%) or liberal (__%), non-Hispanic white (___%), and ages 30-64 (_%) with a college degree or higher (___%).")
+
+  output$characterizingsamplemstatus <- renderPlotly({
+    g <- raw_data %>%
+      group_by(MARITAL_W56) %>%
+      summarize(
+        n = n()
+      ) %>% 
+      mutate(
+        pct = n/sum(n)
+      ) %>%
+      ggplot(aes(x = reorder(MARITAL_W56, -n), y = n, text = paste("Percent of Total:", paste(100*round(pct, digits = 2), "%", sep = ""), sep = " "))) +
+      geom_col() +
+      xlab("Marital Status") +
+      ylab("Number of Participants") +
+      scale_y_continuous(expand = c(0,0)) +
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+      theme(panel.background = element_blank(), axis.ticks = element_blank(), 
+            axis.line = element_line(color = "black"),
+            axis.title.x = element_text(vjust = 1))
+    
+    ggplotly(g, tooltip = 'text')
+  })
+  
+  output$characterizingsampleorientation <- renderPlotly({
+    g <- raw_data %>%
+      group_by(ORIENTATIONMOD_W56) %>%
+      summarize(
+        n = n()
+      ) %>% 
+      mutate(
+        pct = n/sum(n)
+      ) %>%
+      ggplot(aes(x = reorder(ORIENTATIONMOD_W56, -n), y = n, text = paste("Percent of Total:", paste(100*round(pct, digits = 2), "%", sep = ""), sep = " "))) +
+      geom_col() +
+      xlab("Sexual Orientation") +
+      ylab("Number of Participants") +
+      scale_y_continuous(expand = c(0,0)) +
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+      theme(panel.background = element_blank(), axis.ticks = element_blank(), 
+            axis.line = element_line(color = "black"),
+            axis.title.x = element_text(vjust = 1))
+    
+    ggplotly(g, tooltip = 'text')
+  })
+  
 }
 
 # Run the application
