@@ -204,6 +204,53 @@ ui <- fluidPage(
   navbarPage(
     "CSC/SDS 235 Final Project: Michelle, Lauryn, Grace",
     tabPanel(
+      "Interactive Dashboard",
+      sidebarLayout(
+        sidebarPanel(
+          
+          ## selected = idea and syntax from https://shiny.rstudio.com/reference/shiny/0.12.2/selectInput.html
+          selectInput(inputId = "variable1", label = "Choose a first variable", selected = "Current Committed Relationship Status", lookup_questions$questions),
+          
+          ## code for this conditional panel is directly copied and pasted from
+          ## the example at https://shiny.rstudio.com/reference/shiny/1.3.0/conditionalPanel.html -----------
+          
+          selectInput(inputId = "plotType", label = "Plot Type", c(Bar = "bar", Heatmap = "count"), selected = "bar"),
+          # Only show this panel if the plot type is a two-way count
+          conditionalPanel(
+            condition = "input.plotType == 'count'",
+            selectInput(inputId = "variable2", label = "Choose a second variable", selected = "Region of the US they reside in", lookup_questions$questions),
+          ),
+          
+          textOutput("disclaimer_text")
+        ),
+        
+        ### ---------------------------------------------------------------------------------------
+        
+        ## the conditional plot code is based on the conditional panel code above
+        mainPanel(
+          conditionalPanel(
+            condition = "input.plotType == 'bar'",
+            # plotlyOutput and renderPlotly
+            # from https://stackoverflow.com/questions/57085342/renderplotly-does-not-work-despite-not-having-any-errors
+            plotlyOutput("plotbar"),
+            br(),
+            textOutput("textbox"),
+            br(),
+            textOutput("textboxtwo")
+          ),
+          conditionalPanel(
+            condition = "input.plotType == 'count'",
+            plotlyOutput("heatmap"),
+            br(),
+            textOutput("heatmaptextboxone"),
+            textOutput("heatmaptextboxtwo"),
+            br(),
+            textOutput("textboxtwotwo")
+          )
+        )
+      )
+    ),
+    tabPanel(
       "Static Data Analysis",
       fluidRow(
         column(
@@ -230,53 +277,6 @@ ui <- fluidPage(
           textOutput("textb"),
           plotOutput("static_plot"),
           plotOutput("static_plot2")
-        )
-      )
-    ),
-    tabPanel(
-      "Interactive Dashboard",
-      sidebarLayout(
-        sidebarPanel(
-          
-          ## selected = idea and syntax from https://shiny.rstudio.com/reference/shiny/0.12.2/selectInput.html
-          selectInput(inputId = "variable1", label = "Choose a first variable", selected = "Current Committed Relationship Status", lookup_questions$questions),
-
-          ## code for this conditional panel is directly copied and pasted from
-          ## the example at https://shiny.rstudio.com/reference/shiny/1.3.0/conditionalPanel.html -----------
-
-          selectInput(inputId = "plotType", label = "Plot Type", c(Bar = "bar", Heatmap = "count"), selected = "bar"),
-          # Only show this panel if the plot type is a two-way count
-          conditionalPanel(
-            condition = "input.plotType == 'count'",
-            selectInput(inputId = "variable2", label = "Choose a second variable", selected = "Region of the US they reside in", lookup_questions$questions),
-          ),
-          
-          textOutput("disclaimer_text")
-        ),
-
-        ### ---------------------------------------------------------------------------------------
-
-        ## the conditional plot code is based on the conditional panel code above
-        mainPanel(
-          conditionalPanel(
-            condition = "input.plotType == 'bar'",
-            # plotlyOutput and renderPlotly
-            # from https://stackoverflow.com/questions/57085342/renderplotly-does-not-work-despite-not-having-any-errors
-            plotlyOutput("plotbar"),
-            br(),
-            textOutput("textbox"),
-            br(),
-            textOutput("textboxtwo")
-          ),
-          conditionalPanel(
-            condition = "input.plotType == 'count'",
-            plotlyOutput("heatmap"),
-            br(),
-            textOutput("heatmaptextboxone"),
-            textOutput("heatmaptextboxtwo"),
-            br(),
-            textOutput("textboxtwotwo")
-          )
         )
       )
     )
