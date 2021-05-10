@@ -1,4 +1,3 @@
-
 library(shiny)
 library(tidyverse)
 library(scales)
@@ -114,7 +113,7 @@ questions <- c(
   "How important is it to you that online profiles included photos of themselves?",
   "How easy or difficult was it for you to find people on online dating sites or dating apps who you were physically attracted to?",
   "How easy or difficult was it for you to find people on online dating sites or dating apps who shared your hobbies and interests?",
-
+  
   "How easy or difficult was it for you to find people on online dating sites or dating apps who were looking for the same kind of relationship as you?",
   "How easy or difficult was it for you to find people on online dating sites or dating apps who seemed like someone you would want to meet in person?",
   "How would you characterize the number of messages you have received on dating sites/apps?",
@@ -258,25 +257,25 @@ ui <- fluidPage(
           ## h3 from https://shiny.rstudio.com/tutorial/written-tutorial/lesson2/
           h3("About Our Project"),
           htmlOutput("texta2"),
-
+          
           ## https://shiny.rstudio.com/tutorial/written-tutorial/lesson2/ br idea
           br(),
-
+          
           h3("Characterizing the Sample"),
           textOutput("textc"),
           br(),
           fluidRow(
             column(1),
             column(5,
-          plotlyOutput("characterizingsamplemstatus"),
-          br(),
-          br()),
-          column(5,
-          plotlyOutput("characterizingsampleorientation"),
-          br(),
-          br()
+                   plotlyOutput("characterizingsamplemstatus"),
+                   br(),
+                   br()),
+            column(5,
+                   plotlyOutput("characterizingsampleorientation"),
+                   br(),
+                   br()
             ),
-          column(1),
+            column(1),
           ),
           fluidRow(
             column(1),
@@ -300,20 +299,19 @@ ui <- fluidPage(
           )
           
         )),
-        fluidRow(
-          column(
+      fluidRow(
+        column(
           12,
-          h3("Interesting Findings")
-          ),
+          h3("Interesting Findings"),
+          textOutput("textb"),
           fluidRow(
             column(6,
-          plotOutput("static_plot"),
-          textOutput("textb")),
+                   plotOutput("static_plot")),
             column(6,
-          plotOutput("static_plot2"),
-          textOutput("textbtwo"))
+                   plotOutput("static_plot2"))
           )
-        ),
+        )
+      ),
       fluidRow(
         column(
           12,
@@ -326,9 +324,9 @@ ui <- fluidPage(
           br()
         )
       )
-      )
     )
   )
+)
 
 
 
@@ -338,27 +336,27 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   output$plotbar <- renderPlotly({
     g <- ggplot((raw_data %>%
-                  
-                  ## remove NAs https://www.edureka.co/community/634/how-to-remove-na-values-with-dplyr-filter
-                  filter(!is.na(get(lookup_questions %>%
-                                      filter(questions == input$variable1) %>%
-                                      pull(var_names[1])))) %>%
-                  group_by_(
-                    lookup_questions %>%
-                      filter(questions == input$variable1) %>%
-                      pull(var_names[1])) %>%
-                  summarize(
-                    n = n(),
-                  ) %>%
+                   
+                   ## remove NAs https://www.edureka.co/community/634/how-to-remove-na-values-with-dplyr-filter
+                   filter(!is.na(get(lookup_questions %>%
+                                       filter(questions == input$variable1) %>%
+                                       pull(var_names[1])))) %>%
+                   group_by_(
+                     lookup_questions %>%
+                       filter(questions == input$variable1) %>%
+                       pull(var_names[1])) %>%
+                   summarize(
+                     n = n(),
+                   ) %>%
                    mutate(
                      pct = n/sum(n)
                    )), aes(
-                    x = get(lookup_questions %>%
-                              filter(questions == input$variable1) %>%
-                              pull(var_names[1])),
-                    y = n,
-                    text = paste(paste("Number of Participants:", n, sep = " "), paste("Percentage:", paste(100*round(pct, digits = 2), "%", sep = ""), sep = " "), sep = "<br>")
-                  )) +
+                     x = get(lookup_questions %>%
+                               filter(questions == input$variable1) %>%
+                               pull(var_names[1])),
+                     y = n,
+                     text = paste(paste("Number of Participants:", n, sep = " "), paste("Percentage:", paste(100*round(pct, digits = 2), "%", sep = ""), sep = " "), sep = "<br>")
+                   )) +
       geom_col() +
       
       xlab(str_wrap(input$variable1)) +
@@ -370,8 +368,8 @@ server <- function(input, output, session) {
             #Attempt to fix margin - does not work
             #axis.title.x = element_text(margin = margin(t = 20, r = 0, b = 20, l = 0)))
             #This does not work either:
-    axis.title.x = element_text(vjust = 1))
-  
+            axis.title.x = element_text(vjust = 1))
+    
     ## tooltip from 
     ## https://stackoverflow.com/questions/40598011/how-to-customize-hover-information-in-ggplotly-object/40598524
     ## and
@@ -412,9 +410,9 @@ server <- function(input, output, session) {
       pull(n[1])
     
     text <- paste("Note:", 
-             paste(
-                paste(total_asked, total_people, sep = "/"), 
-                "participants were asked this question."), sep = " ")
+                  paste(
+                    paste(total_asked, total_people, sep = "/"), 
+                    "participants were asked this question."), sep = " ")
   })
   
   
@@ -431,55 +429,55 @@ server <- function(input, output, session) {
     responses. For example, only those who are married were not asked
     whether they were in a committed relationship."
   )
-
+  
   # Attempt to build heatmap
   
   output$heatmap <- renderPlotly({
     if(input$variable1 != input$variable2){
       
-   g <- raw_data %>%
-     filter(!is.na(get(lookup_questions %>%
-                         filter(questions == input$variable1) %>%
-                         pull(var_names[1])))) %>%
-     filter(!is.na(get(lookup_questions %>%
-                         filter(questions == input$variable2) %>%
-                         pull(var_names[1])))) %>%
-      ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
-      group_by_(
-        lookup_questions %>%
-          filter(questions == input$variable1) %>%
-          pull(var_names[1]),
-        lookup_questions %>%
-          filter(questions == input$variable2) %>%
-          pull(var_names[1])
-      ) %>%
-      summarize(
-        n = n()
-      ) %>%
-      ggplot(aes(
-        x = get(lookup_questions %>%
-          filter(questions == input$variable1) %>%
-          pull(var_names[1])),
-        y = get(lookup_questions %>%
-          filter(questions == input$variable2) %>%
-          pull(var_names[1])),
-        fill = n
-      )) +
-      geom_tile() +
-
-      ## HTML color codes from https://htmlcolorcodes.com/
-      ## scale fill gradient idea and syntax from https://ggplot2.tidyverse.org/reference/scale_gradient.html
-      scale_fill_gradient(low = "#FFFFFF", high = "#000773", na.value = "#8E8E8E") +
-      xlab(str_wrap(input$variable1)) +
-      ylab(str_wrap(input$variable2)) +
-      ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
-      scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
-   
-   ## tooltip from 
-   ## https://stackoverflow.com/questions/40598011/how-to-customize-hover-information-in-ggplotly-object/40598524
-   ## and
-   ## https://www.rdocumentation.org/packages/plotly/versions/4.9.3/topics/ggplotly
-   ggplotly(g, tooltip = "fill")
+      g <- raw_data %>%
+        filter(!is.na(get(lookup_questions %>%
+                            filter(questions == input$variable1) %>%
+                            pull(var_names[1])))) %>%
+        filter(!is.na(get(lookup_questions %>%
+                            filter(questions == input$variable2) %>%
+                            pull(var_names[1])))) %>%
+        ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
+        group_by_(
+          lookup_questions %>%
+            filter(questions == input$variable1) %>%
+            pull(var_names[1]),
+          lookup_questions %>%
+            filter(questions == input$variable2) %>%
+            pull(var_names[1])
+        ) %>%
+        summarize(
+          n = n()
+        ) %>%
+        ggplot(aes(
+          x = get(lookup_questions %>%
+                    filter(questions == input$variable1) %>%
+                    pull(var_names[1])),
+          y = get(lookup_questions %>%
+                    filter(questions == input$variable2) %>%
+                    pull(var_names[1])),
+          fill = n
+        )) +
+        geom_tile() +
+        
+        ## HTML color codes from https://htmlcolorcodes.com/
+        ## scale fill gradient idea and syntax from https://ggplot2.tidyverse.org/reference/scale_gradient.html
+        scale_fill_gradient(low = "#FFFFFF", high = "#000773", na.value = "#8E8E8E") +
+        xlab(str_wrap(input$variable1)) +
+        ylab(str_wrap(input$variable2)) +
+        ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
+        scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
+      
+      ## tooltip from 
+      ## https://stackoverflow.com/questions/40598011/how-to-customize-hover-information-in-ggplotly-object/40598524
+      ## and
+      ## https://www.rdocumentation.org/packages/plotly/versions/4.9.3/topics/ggplotly
+      ggplotly(g, tooltip = "fill")
     }
     else{
       g <- raw_data %>%
@@ -543,9 +541,9 @@ server <- function(input, output, session) {
       pull(n[1])
     
     text <- paste(paste("Note:", 
-                  paste(
-                    paste(total_asked, total_people, sep = "/"), 
-                    "participants were asked"), sep = " "), str_wrap(input$variable1))
+                        paste(
+                          paste(total_asked, total_people, sep = "/"), 
+                          "participants were asked"), sep = " "), str_wrap(input$variable1))
   })
   
   
@@ -602,10 +600,32 @@ server <- function(input, output, session) {
     Downloaded as metadata alongside the data from <a href ='https://www.pewresearch.org/internet/2020/05/08/dating-and-relationships-in-the-digital-age/'>this link</a>"
   ))
   
-#Test heatmap for interesting findings
-  output$static_plot <- renderPlot({
-    raw_data$SNSFEEL_W56 <- factor(raw_data$SNSFEEL_W56,levels = c("Yes, have felt this way", "No, have never felt this way", "Refused"))
-    
+  #Static plots for Interesting Findings
+  output$static_plot <- renderPlot(
+    raw_data %>%
+      filter(!is.na(F_SEX) & !is.na(ONFEEL.c_W56)) %>%
+      ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
+      group_by_(
+        lookup_questions %>%
+          filter(questions == "In general in the past year, has using online dating sites or dating apps made you feel more hopeful or frustrated?") %>%
+          pull(var_names[1]),
+        lookup_questions %>%
+          filter(questions == "Sex") %>%
+          pull(var_names[1])
+      ) %>%
+      summarize(
+        n = n()
+      ) %>%
+      ggplot(aes(x = F_SEX, y = ONFEEL.c_W56, fill = n)) +
+      geom_tile() +
+      ggtitle("Feelings After Using Online Dating, Sorted by Sex") +
+      xlab("Sex")+
+      ylab("In general in the past year, has using online dating sites or dating apps made you feel more hopeful or frustrated?")+
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10))+
+      scale_fill_gradient(low = "#FFFFFF", high = "#000773", na.value = "#8E8E8E") 
+  )
+  
+  output$static_plot2 <- renderPlot(
     raw_data %>%
       filter(!is.na(F_SEX) & !is.na(SNSFEEL_W56)) %>%
       ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
@@ -620,55 +640,27 @@ server <- function(input, output, session) {
       summarize(
         n = n()
       ) %>%
-    ggplot(aes(x = SNSFEEL_W56, y = F_SEX, fill = n)) +
+      ggplot(aes(x = F_SEX, y = SNSFEEL_W56, fill = n)) +
       geom_tile() +
-      ggtitle("Social Media and Jealousy by Sex") +
-      xlab("Have you ever felt jealous or unsure about your relationship because of the way your
+      ggtitle("Feelings Based on Partner's Social Media Use, Sorted by Sex") +
+      xlab("Sex")+
+      ylab("Have you ever felt jealous or unsure about your relationship because of the way your
            current spouse or partner interacts with other people on social media?")+
-      ylab("Sex")+
-      scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
-      scale_fill_gradient(low = "#FFFFFF", high = "#000773", na.value = "#8E8E8E")
-  })
-
-  output$static_plot2 <- renderPlot({
-    raw_data$BREAKUPACCEPTF2.e_W56 <- factor(raw_data$BREAKUPACCEPTF2.e_W56,levels = c("Refused", "Never acceptable", "Rarely acceptable", "Sometimes acceptable", "Always acceptable"))
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10))+
+      scale_fill_gradient(low = "#FFFFFF", high = "#000773", na.value = "#8E8E8E") 
     
-    raw_data %>%
-      filter(!is.na(F_AGECAT) & !is.na(BREAKUPACCEPTF2.e_W56)) %>%
-      ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
-      group_by_(
-        lookup_questions %>%
-          filter(questions == "Age category") %>%
-          pull(var_names[1]),
-        lookup_questions %>%
-          filter(questions == "Is it acceptable to break up with someone you're in a committed relationship with through a text message?") %>%
-          pull(var_names[1])
-      ) %>%
-      summarize(
-        n = n()
-      ) %>%
-      ggplot(aes(x = BREAKUPACCEPTF2.e_W56, y = F_AGECAT, fill = n)) +
-      geom_tile() +
-      ggtitle("Age and Breaking Up By Text") +
-      xlab("Is it acceptable to break up with someone you're in a committed relationship with through a text message?")+
-      ylab("Age")+
-      scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
-      scale_fill_gradient(low = "#FFFFFF", high = "#000773", na.value = "#8E8E8E")
-  })
-
-
+  )
+  
+  
   output$texta2 <- renderUI(HTML("This application provides an analysis of and means to 
         interact with data from the 2019 Pew Research Center survey on the 
                            intersection between romantic relationships and technology. The set of participants recruited for the survey, part of the American Trends Panel, were designed to serve as a representative sample of the US (Pew Research Center, 2019). 
                            Download the dataset with a Pew Research Center account and view their 
                            analysis <a href ='https://www.pewresearch.org/internet/2020/05/08/dating-and-relationships-in-the-digital-age/'>here</a> (Vogels & Anderson, 2020)."))
-  output$textb <- renderText("Among those in relationships in our sample (2187/4860 participants), women were slightly more likely than men to have felt jealous or insecure about 
-                             their relationship due to their partners' social media interactions. However, this feeling occurred in men, too.")
-  output$textbtwo <- renderText("Among 2423 asked about breaking up methods, people across age categories
-                             agreed that breaking up by text is not acceptable.")
-  
+  output$textb <- renderText("Women tend to experience more negative feelings regarding relationships and social media. For people who used online dating, more women felt pessimistic (41% of all women asked this question) than men (35%). 
+                             Additionally, more women in committed relationships reported feeling insecure because of their partner's social media use (30%) than men (15%).")
   output$textc <- renderText("This sample is largely married (40%), straight (68%), politically moderate (35%) or liberal (26%), non-Hispanic white (68%), and ages 30-64 (64%) with a college degree or higher (46%).")
-
+  
   output$characterizingsamplemstatus <- renderPlotly({
     g <- raw_data %>%
       group_by(MARITAL_W56) %>%
