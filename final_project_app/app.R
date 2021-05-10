@@ -601,10 +601,33 @@ server <- function(input, output, session) {
     Downloaded as metadata alongside the data from <a href ='https://www.pewresearch.org/internet/2020/05/08/dating-and-relationships-in-the-digital-age/'>this link</a>"
   ))
   
-#Test heatmap for interesting findings
+#Static plots for Interesting Findings
   output$static_plot <- renderPlot(
     raw_data %>%
-      #F_SEX not found??
+      filter(!is.na(F_SEX) & !is.na(ONFEEL.c_W56)) %>%
+      ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
+      group_by_(
+        lookup_questions %>%
+          filter(questions == "In general in the past year, has using online dating sites or dating apps made you feel more hopeful or frustrated?") %>%
+          pull(var_names[1]),
+        lookup_questions %>%
+          filter(questions == "Sex") %>%
+          pull(var_names[1])
+      ) %>%
+      summarize(
+        n = n()
+      ) %>%
+    ggplot(aes(x = F_SEX, y = ONFEEL.c_W56, fill = n)) +
+      geom_tile() +
+      ggtitle("Feelings After Using Online Dating, Sorted by Sex") +
+      xlab("Sex")+
+      ylab("In general in the past year, has using online dating sites or dating apps made you feel more hopeful or frustrated?")+
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10))+
+      scale_fill_gradient(low = "#FFFFFF", high = "#000773", na.value = "#8E8E8E") 
+  )
+
+  output$static_plot2 <- renderPlot(
+    raw_data %>%
       filter(!is.na(F_SEX) & !is.na(SNSFEEL_W56)) %>%
       ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
       group_by_(
@@ -618,20 +641,15 @@ server <- function(input, output, session) {
       summarize(
         n = n()
       ) %>%
-    ggplot(aes(x = F_SEX, y = SNSFEEL_W56, fill = n)) +
+      ggplot(aes(x = F_SEX, y = SNSFEEL_W56, fill = n)) +
       geom_tile() +
-      ggtitle("title") +
+      ggtitle("Feelings Based on Partner's Social Media Use, Sorted by Sex") +
       xlab("Sex")+
       ylab("Have you ever felt jealous or unsure about your relationship because of the way your
            current spouse or partner interacts with other people on social media?")+
-      scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
-  )
-
-  output$static_plot2 <- renderPlot(
-    ggplot(raw_data, aes(x = MARITAL_W56, y = F_INCOME)) +
-      geom_count() +
-      ggtitle("Insert More Interesting Graph Here") +
-      scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10))+
+      scale_fill_gradient(low = "#FFFFFF", high = "#000773", na.value = "#8E8E8E") 
+      
   )
 
 
@@ -640,7 +658,8 @@ server <- function(input, output, session) {
                            intersection between romantic relationships and technology. The set of participants recruited for the survey, part of the American Trends Panel, were designed to serve as a representative sample of the US (Pew Research Center, 2019). 
                            Download the dataset with a Pew Research Center account and view their 
                            analysis <a href ='https://www.pewresearch.org/internet/2020/05/08/dating-and-relationships-in-the-digital-age/'>here</a> (Vogels & Anderson, 2020)."))
-  output$textb <- renderText("Put what we find from the interesting findings as a summary here")
+  output$textb <- renderText("Women tend to experience more negative feelings regarding relationships and social media. For people who used online dating, more women felt pessimistic (41% of all women asked this question) than men (35%). 
+                             Additionally, more women in committed relationships reported feeling insecure because of their partner's social media use (30%) than men (15%).")
   output$textc <- renderText("This sample is largely married (40%), straight (68%), politically moderate (35%) or liberal (26%), non-Hispanic white (68%), and ages 30-64 (64%) with a college degree or higher (46%).")
 
   output$characterizingsamplemstatus <- renderPlotly({
