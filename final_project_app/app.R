@@ -303,15 +303,16 @@ ui <- fluidPage(
         fluidRow(
           column(
           12,
-          h3("Interesting Findings"),
-          textOutput("textb"),
+          h3("Interesting Findings")
+          ),
           fluidRow(
             column(6,
-          plotOutput("static_plot")),
+          plotOutput("static_plot"),
+          textOutput("textb")),
             column(6,
-          plotOutput("static_plot2"))
+          plotOutput("static_plot2"),
+          textOutput("textbtwo"))
           )
-        )
         ),
       fluidRow(
         column(
@@ -602,9 +603,10 @@ server <- function(input, output, session) {
   ))
   
 #Test heatmap for interesting findings
-  output$static_plot <- renderPlot(
+  output$static_plot <- renderPlot({
+    raw_data$SNSFEEL_W56 <- factor(raw_data$SNSFEEL_W56,levels = c("Yes, have felt this way", "No, have never felt this way", "Refused"))
+    
     raw_data %>%
-      #F_SEX not found??
       filter(!is.na(F_SEX) & !is.na(SNSFEEL_W56)) %>%
       ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
       group_by_(
@@ -618,21 +620,41 @@ server <- function(input, output, session) {
       summarize(
         n = n()
       ) %>%
-    ggplot(aes(x = F_SEX, y = SNSFEEL_W56, fill = n)) +
+    ggplot(aes(x = SNSFEEL_W56, y = F_SEX, fill = n)) +
       geom_tile() +
-      ggtitle("title") +
-      xlab("Sex")+
-      ylab("Have you ever felt jealous or unsure about your relationship because of the way your
+      ggtitle("Social Media and Jealousy by Sex") +
+      xlab("Have you ever felt jealous or unsure about your relationship because of the way your
            current spouse or partner interacts with other people on social media?")+
-      scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
-  )
+      ylab("Sex")+
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+      scale_fill_gradient(low = "#FFFFFF", high = "#000773", na.value = "#8E8E8E")
+  })
 
-  output$static_plot2 <- renderPlot(
-    ggplot(raw_data, aes(x = MARITAL_W56, y = F_INCOME)) +
-      geom_count() +
-      ggtitle("Insert More Interesting Graph Here") +
-      scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
-  )
+  output$static_plot2 <- renderPlot({
+    raw_data$BREAKUPACCEPTF2.e_W56 <- factor(raw_data$BREAKUPACCEPTF2.e_W56,levels = c("Refused", "Never acceptable", "Rarely acceptable", "Sometimes acceptable", "Always acceptable"))
+    
+    raw_data %>%
+      filter(!is.na(F_AGECAT) & !is.na(BREAKUPACCEPTF2.e_W56)) %>%
+      ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
+      group_by_(
+        lookup_questions %>%
+          filter(questions == "Age category") %>%
+          pull(var_names[1]),
+        lookup_questions %>%
+          filter(questions == "Is it acceptable to break up with someone you're in a committed relationship with through a text message?") %>%
+          pull(var_names[1])
+      ) %>%
+      summarize(
+        n = n()
+      ) %>%
+      ggplot(aes(x = BREAKUPACCEPTF2.e_W56, y = F_AGECAT, fill = n)) +
+      geom_tile() +
+      ggtitle("Age and Breaking Up By Text") +
+      xlab("Is it acceptable to break up with someone you're in a committed relationship with through a text message?")+
+      ylab("Age")+
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+      scale_fill_gradient(low = "#FFFFFF", high = "#000773", na.value = "#8E8E8E")
+  })
 
 
   output$texta2 <- renderUI(HTML("This application provides an analysis of and means to 
@@ -640,7 +662,11 @@ server <- function(input, output, session) {
                            intersection between romantic relationships and technology. The set of participants recruited for the survey, part of the American Trends Panel, were designed to serve as a representative sample of the US (Pew Research Center, 2019). 
                            Download the dataset with a Pew Research Center account and view their 
                            analysis <a href ='https://www.pewresearch.org/internet/2020/05/08/dating-and-relationships-in-the-digital-age/'>here</a> (Vogels & Anderson, 2020)."))
-  output$textb <- renderText("Put what we find from the interesting findings as a summary here")
+  output$textb <- renderText("Among those in relationships in our sample (2187/4860 participants), women were slightly more likely than men to have felt jealous or insecure about 
+                             their relationship due to their partners' social media interactions. However, this feeling occurred in men, too.")
+  output$textbtwo <- renderText("Among 2423 asked about breaking up methods, people across age categories
+                             agreed that breaking up by text is not acceptable.")
+  
   output$textc <- renderText("This sample is largely married (40%), straight (68%), politically moderate (35%) or liberal (26%), non-Hispanic white (68%), and ages 30-64 (64%) with a college degree or higher (46%).")
 
   output$characterizingsamplemstatus <- renderPlotly({
