@@ -407,7 +407,22 @@ ui <- fluidPage(
                    br(),
                    br()),
             column(2)
-          )
+          ),
+          fluidRow(column(6,
+                          plotlyOutput("botheredbycell"),
+                          br()),
+                   column(6,
+                          plotlyOutput("distractedbycell"),
+                          br())
+          ),
+          
+          fluidRow(column(2), 
+                   column(8,
+                          textOutput("cellphonetext"),
+                          br(),
+                          textOutput("finaltext")),
+                   column(2))
+          
         )
       ),
       
@@ -767,7 +782,7 @@ server <- function(input, output, session) {
                            intersection between romantic relationships and technology. The set of participants recruited for the survey, part of the American Trends Panel, were designed to serve as a representative sample of the US (Pew Research Center, 2019). 
                            Download the dataset with a Pew Research Center account and view their 
                            analysis <a href ='https://www.pewresearch.org/internet/2020/05/08/dating-and-relationships-in-the-digital-age/'>here</a> (Vogels & Anderson, 2020)."))
-  output$onlinenegfeelingstext <- renderText("Females tend to experience more negative feelings regarding relationships and social media. For people who used online dating, more females felt pessimistic (41% of all females asked this question) than males (35%).")
+  output$onlinenegfeelingstext <- renderText("Now, we will turn specifically to online dating. Here, we notice that females tend to experience more negative feelings regarding online dating. For people who used online dating, more females felt pessimistic (41% of all females asked this question) than males (35%).")
   
   
   output$textbtwo <- renderText("We thought that, perhaps jealousy and insecurity inflicted by social media
@@ -1213,7 +1228,7 @@ server <- function(input, output, session) {
   output$summaryonline <- renderText("Despite these findings about pesimission with regard to
                                      recent dating in general, people's current dating lives, and the downsides of online dating,
                                      the participants were mixed on whether online dating has improved
-                                     or worsened online dating in general. A plurality of participants (48%)
+                                     or worsened dating in general. A plurality of participants (48%)
                                      said that online dating had neither effect. This brings up the question,
                                      if online dating is not what is making modern dating more difficult, then what is?")
   
@@ -1260,7 +1275,91 @@ server <- function(input, output, session) {
   output$bullingharasstext <- renderText("Bullying and harassment appears to be a problem on online dating apps and 
                                          websites. 59% of participants said that this was somewhat or very common, 
                                          a concerning statistic.")
-}
+
+  
+  output$botheredbycell <- renderPlotly({
+    raw_data$PARTNERSCREEN.a_W56 <- factor(raw_data$PARTNERSCREEN.a_W56,levels = c("Never", "Rarely", "Sometimes", "Often", "Refused"))
+    
+    g <- ggplot((raw_data %>%
+                   
+                   ## remove NAs https://www.edureka.co/community/634/how-to-remove-na-values-with-dplyr-filter
+                   filter(!is.na(PARTNERSCREEN.a_W56)) %>%
+                   group_by(PARTNERSCREEN.a_W56) %>%
+                   summarize(
+                     n = n(),
+                   ) %>%
+                   mutate(
+                     pct = n/sum(n)
+                   )), aes(
+                     x = PARTNERSCREEN.a_W56,
+                     y = n,
+                     text = paste(paste("Number of Participants:", n, sep = " "), paste("Percentage:", paste(100*round(pct, digits = 2), "%", sep = ""), sep = " "), sep = "<br>")
+                   )) +
+      geom_col() +
+      ggtitle("Cell Phone Time Bother in Relationships") +
+      xlab(str_wrap("How often, if ever, are you bothered by the amount of time your spouse or partner spends on their cellphone?")) +
+      ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+      scale_y_continuous("Number of Participants", expand = c(0,0)) +
+      theme(panel.background = element_blank(), axis.ticks = element_blank(), 
+            axis.line = element_line(color = "black"),
+            axis.title.x = element_text(vjust = 1))
+    
+    ## tooltip from 
+    ## https://stackoverflow.com/questions/40598011/how-to-customize-hover-information-in-ggplotly-object/40598524
+    ## and
+    ## https://www.rdocumentation.org/packages/plotly/versions/4.9.3/topics/ggplotly
+    
+    ggplotly(g, tooltip = "text")
+  })
+  
+  output$distractedbycell <- renderPlotly({
+    raw_data$PARTNERDISTRACT_W56 <- factor(raw_data$PARTNERDISTRACT_W56,levels = c("Never", "Rarely", "Sometimes", "Often", "Refused"))
+    
+    g <- ggplot((raw_data %>%
+                   
+                   ## remove NAs https://www.edureka.co/community/634/how-to-remove-na-values-with-dplyr-filter
+                   filter(!is.na(PARTNERDISTRACT_W56)) %>%
+                   group_by(PARTNERDISTRACT_W56) %>%
+                   summarize(
+                     n = n(),
+                   ) %>%
+                   mutate(
+                     pct = n/sum(n)
+                   )), aes(
+                     x = PARTNERDISTRACT_W56,
+                     y = n,
+                     text = paste(paste("Number of Participants:", n, sep = " "), paste("Percentage:", paste(100*round(pct, digits = 2), "%", sep = ""), sep = " "), sep = "<br>")
+                   )) +
+      geom_col() +
+      ggtitle("Frequency of Distraction by Cell Phone in Relationships") +
+      xlab(str_wrap("How often, if ever, do you feel as if your spouse or partner is distracted by their cellphone when you are trying to have a conversation with them?")) +
+      ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+      scale_y_continuous("Number of Participants", expand = c(0,0)) +
+      theme(panel.background = element_blank(), axis.ticks = element_blank(), 
+            axis.line = element_line(color = "black"),
+            axis.title.x = element_text(vjust = 1))
+    
+    ## tooltip from 
+    ## https://stackoverflow.com/questions/40598011/how-to-customize-hover-information-in-ggplotly-object/40598524
+    ## and
+    ## https://www.rdocumentation.org/packages/plotly/versions/4.9.3/topics/ggplotly
+    
+    ggplotly(g, tooltip = "text")
+  })
+  
+  output$cellphonetext <- renderText("Another possibility for why participants are dissatisfied with dating is that
+                                     we constantly use our cell phones. 40% of participants said that they were sometimess or often
+                                     bothered by the amount of time that their spouse or partner spent on their cell phone, highlighting
+                                     how others' behavior in technology can put a strain on relationships. Perhaps more notably, a majority of the sample (53%)
+                                     said that they sometimes or often feel that their partners are distracted by a cell phone while 
+                                     they want to have a conversation. This high level of distraction has the potential to make casual dating
+                                     and committed relationships alike difficult.")
+  
+  output$finaltext <- renderText("Use the Interactive Dashboard to explore more reasons why some are dissatisfied, and learn why some are happy with modern technology in dating and relationships.")
+  
+  }
 
 # Run the application
 shinyApp(ui = ui, server = server)

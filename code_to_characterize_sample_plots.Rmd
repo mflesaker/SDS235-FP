@@ -9,8 +9,6 @@ library(tidyverse)
 ```
 
 
-
-
 ```{r}
 raw_data <- read_csv("CopyOfdata.csv") %>%
   select(
@@ -356,6 +354,235 @@ g <- raw_data %>%
     axis.title.x = element_text(vjust = 1))
   
 ggplotly(g, tooltip = 'text')
+```
+
+
+
+```{r}
+g <- raw_data %>%
+     filter(!is.na(MARITAL_W56)) %>%
+     filter(!is.na(F_USR_SELFID)) %>%
+      ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
+      group_by(MARITAL_W56,
+        F_USR_SELFID
+      ) %>%
+      summarize(
+        n = n()
+      ) %>%
+  group_by(MARITAL_W56) %>%
+  mutate(
+    n_total_for_var_1 = sum(n)
+  ) %>%
+  group_by(F_USR_SELFID) %>%
+  mutate(
+    n_total_for_var_2 = sum(n)
+  ) %>%
+  mutate(
+    n_as_pct_of_var1 = 100*round(n/n_total_for_var_1, digits = 2)
+  ) %>%
+  mutate(
+    n_as_pct_of_var2 = 100*(round(n/n_total_for_var_2, digits = 2))
+  ) %>%
+  select(-n_total_for_var_1, -n_total_for_var_2) %>%
+      ggplot(aes(
+        x = MARITAL_W56,
+        y = F_USR_SELFID,
+        fill = n,
+        text = paste(paste(paste("n:", n, sep = " "),
+                     paste("N as a percentage of people with %{x}:", paste(n_as_pct_of_var1, "%", sep = "")),
+                     sep = "<br>"),
+                     paste("N as a percentage of people with %{y}:", paste(n_as_pct_of_var2, "%", sep = "")), sep = "<br>")
+      )) +
+      geom_tile() +
+    ## HTML color codes from https://htmlcolorcodes.com/
+      ## scale fill gradient idea and syntax from https://ggplot2.tidyverse.org/reference/scale_gradient.html
+      scale_fill_gradient(low = "#FFFFFF", high = "#000773", na.value = "#8E8E8E") +
+      ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
+   
+   ## tooltip from 
+   ## https://stackoverflow.com/questions/40598011/how-to-customize-hover-information-in-ggplotly-object/40598524
+   ## and
+   ## https://www.rdocumentation.org/packages/plotly/versions/4.9.3/topics/ggplotly
+
+g <- ggplotly(g, tooltip = "text")
+
+g
+```
+
+
+```{r}
+raw_data$FAMSURV19DATING_W56 <- factor(raw_data$FAMSURV19DATING_W56,levels = c("Refused", "Not at all well", "Not too well", "Fairly well", "Very well"))
+
+g <- ggplot((raw_data %>%
+                   
+                   ## remove NAs https://www.edureka.co/community/634/how-to-remove-na-values-with-dplyr-filter
+                   filter(!is.na(FAMSURV19DATING_W56)) %>%
+                   group_by(FAMSURV19DATING_W56) %>%
+                   summarize(
+                     n = n(),
+                   ) %>%
+                   mutate(
+                     pct = n/sum(n)
+                   )), aes(
+                     x = FAMSURV19DATING_W56,
+                     y = n,
+                     text = paste(paste("Number of Participants:", n, sep = " "), paste("Percentage:", paste(100*round(pct, digits = 2), "%", sep = ""), sep = " "), sep = "<br>")
+                   )) +
+      geom_col() +
+      xlab("Overall, would you say that things in your dating life are going...") +
+      ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+      scale_y_continuous(expand = c(0,0)) +
+      theme(panel.background = element_blank(), axis.ticks = element_blank(), 
+            axis.line = element_line(color = "black"),
+            #Attempt to fix margin - does not work
+            #axis.title.x = element_text(margin = margin(t = 20, r = 0, b = 20, l = 0)))
+            #This does not work either:
+            axis.title.x = element_text(vjust = 1))
+    
+    ## tooltip from 
+    ## https://stackoverflow.com/questions/40598011/how-to-customize-hover-information-in-ggplotly-object/40598524
+    ## and
+    ## https://www.rdocumentation.org/packages/plotly/versions/4.9.3/topics/ggplotly
+    
+    ggplotly(g, tooltip = "text")
+```
+
+
+```{r}
+raw_data$FAMSURV19DATING_W56 <- factor(raw_data$FAMSURV19DATING_W56,levels = c("Refused", "Not at all well", "Not too well", "Fairly well", "Very well"))
+
+ g <- raw_data %>%
+        filter(!is.na(FAMSURV19DATING_W56)) %>%
+        filter(!is.na(F_SEX)) %>%
+        ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
+        group_by(FAMSURV19DATING_W56,
+          F_SEX
+        ) %>%
+        summarize(
+          n = n()
+        ) %>%
+        ggplot(aes(
+          x = FAMSURV19DATING_W56,
+          y = F_SEX,
+          fill = n
+        )) +
+        geom_tile() +
+        
+        ## HTML color codes from https://htmlcolorcodes.com/
+        ## scale fill gradient idea and syntax from https://ggplot2.tidyverse.org/reference/scale_gradient.html
+        scale_fill_gradient(low = "#FFFFFF", high = "#000773", na.value = "#8E8E8E") +
+        xlab("Overall, would you say that things in your dating life are going...") +
+        ylab("Sex") +
+        ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
+        scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
+      
+      ## tooltip from 
+      ## https://stackoverflow.com/questions/40598011/how-to-customize-hover-information-in-ggplotly-object/40598524
+      ## and
+      ## https://www.rdocumentation.org/packages/plotly/versions/4.9.3/topics/ggplotly
+      ggplotly(g, tooltip = "fill")
+```
+
+
+```{r}
+    raw_data$DATE10YR_W56 <- factor(raw_data$DATE10YR_W56,levels = c("Refused", "Harder today", "About the same", "Easier today"))
+
+ g <- raw_data %>%
+        filter(!is.na(DATE10YR_W56)) %>%
+        filter(!is.na(F_SEX)) %>%
+        ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
+        group_by(DATE10YR_W56,
+          F_SEX
+        ) %>%
+        summarize(
+          n = n()
+        ) %>%
+        ggplot(aes(
+          x = DATE10YR_W56,
+          y = F_SEX,
+          fill = n
+        )) +
+        geom_tile() +
+        
+        ## HTML color codes from https://htmlcolorcodes.com/
+        ## scale fill gradient idea and syntax from https://ggplot2.tidyverse.org/reference/scale_gradient.html
+        scale_fill_gradient(low = "#FFFFFF", high = "#000773", na.value = "#8E8E8E") +
+        xlab("Compared to 10 years ago, for most people, do you think dating is...") +
+        ylab("Sex") +
+        ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
+        scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
+      
+      ## tooltip from 
+      ## https://stackoverflow.com/questions/40598011/how-to-customize-hover-information-in-ggplotly-object/40598524
+      ## and
+      ## https://www.rdocumentation.org/packages/plotly/versions/4.9.3/topics/ggplotly
+      ggplotly(g, tooltip = "fill")
+```
+
+```{r}
+raw_data$ONFEEL.c_W56 <- factor(raw_data$ONFEEL.c_W56,levels = c("Frustrated", "Neither", "Hopeful", "Refused"))
+
+g <- raw_data %>%
+      filter(!is.na(F_SEX) & !is.na(ONFEEL.c_W56)) %>%
+      ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
+      group_by_(
+        lookup_questions %>%
+          filter(questions == "In general in the past year, has using online dating sites or dating apps made you feel more hopeful or frustrated?") %>%
+          pull(var_names[1]),
+        lookup_questions %>%
+          filter(questions == "Sex") %>%
+          pull(var_names[1])
+      ) %>%
+      summarize(
+        n = n()
+      ) %>%
+      ggplot(aes(x = ONFEEL.c_W56, y =F_SEX, fill = n)) +
+      geom_tile() +
+      ggtitle("Feelings After Using Online Dating, Sorted by Sex") +
+      xlab("In general in the past year, has using online dating sites or dating apps made you feel more hopeful or frustrated?")+
+      ylab("Sex")+
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10))+
+      scale_fill_gradient(low = "#FFFFFF", high = "#000773", na.value = "#8E8E8E") 
+
+ggplotly(g, tooltip = "fill")
+```
+
+```{r}
+raw_data$PARTNERDISTRACT_W56 <- factor(raw_data$PARTNERDISTRACT_W56,levels = c("Never", "Rarely", "Sometimes", "Often", "Refused"))
+    
+    g <- ggplot((raw_data %>%
+                   
+                   ## remove NAs https://www.edureka.co/community/634/how-to-remove-na-values-with-dplyr-filter
+                   filter(!is.na(PARTNERDISTRACT_W56)) %>%
+                   group_by(PARTNERDISTRACT_W56) %>%
+                   summarize(
+                     n = n(),
+                   ) %>%
+                   mutate(
+                     pct = n/sum(n)
+                   )), aes(
+                     x = PARTNERDISTRACT_W56,
+                     y = n,
+                     text = paste(paste("Number of Participants:", n, sep = " "), paste("Percentage:", paste(100*round(pct, digits = 2), "%", sep = ""), sep = " "), sep = "<br>")
+                   )) +
+      geom_col() +
+      ggtitle("Frequency of Distraction by Cell Phone in Relationships") +
+      xlab(str_wrap("How often, if ever, do you feel as if your spouse or partner is distracted by their cellphone when you are trying to have a conversation with them?")) +
+      ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+      scale_y_continuous("Number of Participants", expand = c(0,0)) +
+      theme(panel.background = element_blank(), axis.ticks = element_blank(), 
+            axis.line = element_line(color = "black"),
+            axis.title.x = element_text(vjust = 1))
+    
+    ## tooltip from 
+    ## https://stackoverflow.com/questions/40598011/how-to-customize-hover-information-in-ggplotly-object/40598524
+    ## and
+    ## https://www.rdocumentation.org/packages/plotly/versions/4.9.3/topics/ggplotly
+    
+    ggplotly(g, tooltip = "text")
 ```
 
 
