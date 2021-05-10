@@ -601,13 +601,29 @@ server <- function(input, output, session) {
     Downloaded as metadata alongside the data from <a href ='https://www.pewresearch.org/internet/2020/05/08/dating-and-relationships-in-the-digital-age/'>this link</a>"
   ))
   
-  
+#Test heatmap for interesting findings
   output$static_plot <- renderPlot(
-    ggplot(raw_data, aes(x = MARITAL_W56, y = F_RACETHN)) +
-      geom_count() +
-      ggtitle("Sample Categorized by Relationship Status and Race/Ethnicity") +
-      xlab("Relationship Status")+
-      ylab("Race/Ethnicity")+
+    test <- raw_data %>%
+      #F_SEX not found??
+      select(!is.na(F_SEX), !is.na(SNSFEEL_W56)) %>%
+      ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
+      group_by_(
+        lookup_questions %>%
+          filter(questions == "Have you ever felt jealous or unsure about your relationship because of the way your current spouse or partner interacts with other people on social media?") %>%
+          pull(var_names[1]),
+        lookup_questions %>%
+          filter(questions == "Sex") %>%
+          pull(var_names[1])
+      ) %>%
+      summarize(
+        n = n()
+      ) %>%
+    ggplot(aes(x = F_SEX, y = SNSFEEL_W56, fill = n)) +
+      geom_tile() +
+      ggtitle("title") +
+      xlab("Sex")+
+      ylab("Have you ever felt jealous or unsure about your relationship because of the way your
+           current spouse or partner interacts with other people on social media?")+
       scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
   )
 
