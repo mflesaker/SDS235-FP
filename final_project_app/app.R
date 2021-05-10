@@ -603,9 +603,9 @@ server <- function(input, output, session) {
   
 #Test heatmap for interesting findings
   output$static_plot <- renderPlot(
-    test <- raw_data %>%
+    raw_data %>%
       #F_SEX not found??
-      select(!is.na(F_SEX), !is.na(SNSFEEL_W56)) %>%
+      filter(!is.na(F_SEX) & !is.na(SNSFEEL_W56)) %>%
       ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
       group_by_(
         lookup_questions %>%
