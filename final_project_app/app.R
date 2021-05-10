@@ -393,6 +393,20 @@ ui <- fluidPage(
                    br(),
                    br()),
             column(2)
+          ),
+          
+          fluidRow(
+            column(2),
+            column(6, 
+                   plotlyOutput("jealousy_by_sex"),
+                   br(),
+                   br()
+            ),
+            column(2,
+                   textOutput("textbtwo"),
+                   br(),
+                   br()),
+            column(2)
           )
         )
       ),
@@ -718,8 +732,10 @@ server <- function(input, output, session) {
     ggplotly(g, tooltip = "fill")
   })
   
-  output$jealousy_by_sex <- renderPlot(
-    raw_data %>%
+  output$jealousy_by_sex <- renderPlotly({
+    raw_data$SNSFEEL_W56 <- factor(raw_data$SNSFEEL_W56,levels = c("Yes, have felt this way", "No, have never felt this way", "Refused"))
+    
+    g <- raw_data %>%
       filter(!is.na(F_SEX) & !is.na(SNSFEEL_W56)) %>%
       ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
       group_by_(
@@ -733,16 +749,17 @@ server <- function(input, output, session) {
       summarize(
         n = n()
       ) %>%
-      ggplot(aes(x = F_SEX, y = SNSFEEL_W56, fill = n)) +
+      ggplot(aes(x = SNSFEEL_W56, y =F_SEX, fill = n)) +
       geom_tile() +
-      ggtitle("Feelings Based on Partner's Social Media Use, Sorted by Sex") +
-      xlab("Sex")+
-      ylab("Have you ever felt jealous or unsure about your relationship because of the way your
-           current spouse or partner interacts with other people on social media?")+
+      ggtitle("Jealousy in Relationships and Social Media, Sorted by Sex") +
+      xlab(str_wrap("Have you ever felt jealous or unsure about your relationship because of the way your current spouse or partner interacts with other people on social media?"))+
+      ylab("Sex")+
       scale_x_discrete(labels = function(x) str_wrap(x, width = 10))+
       scale_fill_gradient(low = "#FFFFFF", high = "#000773", na.value = "#8E8E8E") 
     
-  )
+    ggplotly(g, tooltip = "fill")
+    
+  })
   
   
   output$aboutprojtext<- renderUI(HTML("This application provides an analysis of and means to 
@@ -750,10 +767,12 @@ server <- function(input, output, session) {
                            intersection between romantic relationships and technology. The set of participants recruited for the survey, part of the American Trends Panel, were designed to serve as a representative sample of the US (Pew Research Center, 2019). 
                            Download the dataset with a Pew Research Center account and view their 
                            analysis <a href ='https://www.pewresearch.org/internet/2020/05/08/dating-and-relationships-in-the-digital-age/'>here</a> (Vogels & Anderson, 2020)."))
-  output$onlinenegfeelingstext <- renderText("Women tend to experience more negative feelings regarding relationships and social media. For people who used online dating, more women felt pessimistic (41% of all women asked this question) than men (35%).")
+  output$onlinenegfeelingstext <- renderText("Females tend to experience more negative feelings regarding relationships and social media. For people who used online dating, more females felt pessimistic (41% of all females asked this question) than males (35%).")
   
   
-  output$textbtwo <- renderText("Additionally, more women in committed relationships reported feeling insecure because of their partner's social media use (30%) than men (15%).")
+  output$textbtwo <- renderText("We thought that, perhaps jealousy and insecurity inflicted by social media
+                                play a role here. We note that more females in committed relationships reported feeling insecure because of their partner's social media use (30%) than males (15%). However, both of these
+                                proportions are relatively low, so social media jealousy may not account for dissatisfaction with dating.")
   output$characterizing_sample_text <- renderText("This sample is largely married (40%), straight (68%), politically moderate (35%) or liberal (26%), non-Hispanic white (68%), and ages 30-64 (64%) with a college degree or higher (46%).")
   
   output$characterizingsamplemstatus <- renderPlotly({
@@ -994,7 +1013,10 @@ server <- function(input, output, session) {
   
   output$overallinterestingfindingstext <- renderText("Many, but not all, participants expressed struggles or dissatisfaction
                                                       with modern dating. On this survey, which was collected before the COVID-19 pandemic,
-                                                      participants identifying as male and female, and across ages, reported difficulties.")
+                                                      participants identifying as male and female, and across ages, reported difficulties. Many also reported
+                                                      feeling frustrated with online dating, and noted the prevalence of bullying and harassment. As a disclaimer, please note that this survey and 
+                                                      the following analysis binary sex as a proxy for gender identity. This is a 
+                                                      flawed and incomplete measure of gender.")
   
   output$datinglifebysex <- renderPlotly({
     raw_data$FAMSURV19DATING_W56 <- factor(raw_data$FAMSURV19DATING_W56,levels = c("Not at all well", "Not too well", "Fairly well", "Very well", "Refused"))
@@ -1168,7 +1190,7 @@ server <- function(input, output, session) {
                      text = paste(paste("Number of Participants:", n, sep = " "), paste("Percentage:", paste(100*round(pct, digits = 2), "%", sep = ""), sep = " "), sep = "<br>")
                    )) +
       geom_col() +
-      ggtitle("Perceived Effect of Online Datinig") +
+      ggtitle("Perceived Effect of Online Dating") +
       xlab(str_wrap("Overall, what type of effect would you say online dating sites and dating apps have had on dating and relationships?")) +
       ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
       scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
