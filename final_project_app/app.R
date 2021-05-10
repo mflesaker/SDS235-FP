@@ -233,9 +233,9 @@ ui <- fluidPage(
             # from https://stackoverflow.com/questions/57085342/renderplotly-does-not-work-despite-not-having-any-errors
             plotlyOutput("plotbar"),
             br(),
-            textOutput("textbox"),
+            textOutput("numparticipantsasked"),
             br(),
-            textOutput("textboxtwo")
+            textOutput("numparticipantsaskedexplan")
           ),
           conditionalPanel(
             condition = "input.plotType == 'count'",
@@ -244,7 +244,7 @@ ui <- fluidPage(
             textOutput("heatmaptextboxone"),
             textOutput("heatmaptextboxtwo"),
             br(),
-            textOutput("textboxtwotwo")
+            textOutput("countexplaintwo")
           )
         )
       )
@@ -256,13 +256,13 @@ ui <- fluidPage(
           12,
           ## h3 from https://shiny.rstudio.com/tutorial/written-tutorial/lesson2/
           h3("About Our Project"),
-          htmlOutput("texta2"),
+          htmlOutput("aboutprojtext"),
           
           ## https://shiny.rstudio.com/tutorial/written-tutorial/lesson2/ br idea
           br(),
           
           h3("Characterizing the Sample"),
-          textOutput("textc"),
+          textOutput("characterizing_sample_text"),
           br(),
           fluidRow(
             column(1),
@@ -293,6 +293,7 @@ ui <- fluidPage(
             column(1),
             column(5,
                    plotlyOutput("characterizingsampleage")),
+            
             column(5,
                    plotlyOutput("characterizingsampleeduc")),
             column(1)
@@ -303,15 +304,101 @@ ui <- fluidPage(
         column(
           12,
           h3("Interesting Findings"),
-          textOutput("textb"),
+          textOutput("overallinterestingfindingstext"),
+          br(),
+          fluidRow(column(3),
+            column(6,
+                   plotlyOutput("thingsindatinglife"),
+                   br(),
+                  textOutput("thingsdaatinglifetext"),
+                  br(),
+                  br()),
+            column(3)
+          ),
           fluidRow(
             column(6,
-                   plotOutput("static_plot")),
+                   plotlyOutput("datinglifebyage"),
+                   br()),
             column(6,
-                   plotOutput("static_plot2"))
+                   plotlyOutput("datinglifebysex"),
+                   br())
+          ),
+          fluidRow(column(3),
+            column(6,
+            textOutput("summarydatinglife"),
+            br(),
+            br()
+            ),
+            column(3)
+          ),
+          
+          fluidRow(column(3),
+            column(6,
+                 plotlyOutput("tenyears"),
+                 br(),
+                 textOutput("tenyearstext"),
+                 br(),
+                 br()),
+            column(3)
+          ),
+          
+          fluidRow(column(6,
+                          plotlyOutput("tenyearsbyage"),
+                          br()),
+                   column(6,
+                          plotlyOutput("tenyearsbysex"),
+                          br())
+                   ),
+          
+          fluidRow(column(3),
+                   column(6,
+                          textOutput("summarytenyears"),
+                          br(),
+                          br()
+                   ),
+                   column(3)
+          ),
+          
+          fluidRow(column(3),
+                   column(6,
+                          plotlyOutput("feelings_by_sex"),
+                          br(),
+                          textOutput("onlinenegfeelingstext"),
+                          br(),
+                          br()
+                   ),
+                   column(3)
+          ),
+          
+          fluidRow(column(3),
+                   column(6,
+                          plotlyOutput("bullingharass"),
+                          br(),
+                          textOutput("bullingharasstext"),
+                          br(),
+                          br()
+                   ),
+                   column(3)
+          ),
+          
+          fluidRow(
+            column(2),
+            column(6, 
+                   plotlyOutput("effectofonline"),
+                   br(),
+                   br()
+            ),
+            column(2,
+                   textOutput("summaryonline"),
+                   br(),
+                   br()),
+            column(2)
           )
         )
       ),
+      
+      
+      
       fluidRow(
         column(
           12,
@@ -378,7 +465,7 @@ server <- function(input, output, session) {
     ggplotly(g, tooltip = "text")
   })
   
-  output$textbox <- renderText({
+  output$numparticipantsasked <- renderText({
     total_asked <- raw_data %>%
       select(
         lookup_questions %>%
@@ -416,14 +503,14 @@ server <- function(input, output, session) {
   })
   
   
-  output$textboxtwo <- renderText(
+  output$numparticipantsaskedexplan <- renderText(
     "Whether or not participants
     were asked certain questions was often conditional on previous 
     responses. For example, only those who are married were not asked
     whether they were in a committed relationship."
   )
   
-  output$textboxtwotwo <- renderText(
+  output$countexplaintwo <- renderText(
     "Whether or not participants
     were asked certain questions was often conditional on previous 
     responses. For example, only those who are married were not asked
@@ -601,8 +688,12 @@ server <- function(input, output, session) {
   ))
   
   #Static plots for Interesting Findings
-  output$static_plot <- renderPlot(
-    raw_data %>%
+  output$feelings_by_sex <- renderPlotly({
+    
+    
+    raw_data$ONFEEL.c_W56 <- factor(raw_data$ONFEEL.c_W56,levels = c("Frustrated", "Neither", "Hopeful", "Refused"))
+    
+    g <- raw_data %>%
       filter(!is.na(F_SEX) & !is.na(ONFEEL.c_W56)) %>%
       ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
       group_by_(
@@ -616,16 +707,18 @@ server <- function(input, output, session) {
       summarize(
         n = n()
       ) %>%
-      ggplot(aes(x = F_SEX, y = ONFEEL.c_W56, fill = n)) +
+      ggplot(aes(x = ONFEEL.c_W56, y =F_SEX, fill = n)) +
       geom_tile() +
       ggtitle("Feelings After Using Online Dating, Sorted by Sex") +
-      xlab("Sex")+
-      ylab("In general in the past year, has using online dating sites or dating apps made you feel more hopeful or frustrated?")+
+      xlab(str_wrap("In general in the past year, has using online dating sites or dating apps made you feel more hopeful or frustrated?"))+
+      ylab("Sex")+
       scale_x_discrete(labels = function(x) str_wrap(x, width = 10))+
       scale_fill_gradient(low = "#FFFFFF", high = "#000773", na.value = "#8E8E8E") 
-  )
+    
+    ggplotly(g, tooltip = "fill")
+  })
   
-  output$static_plot2 <- renderPlot(
+  output$jealousy_by_sex <- renderPlot(
     raw_data %>%
       filter(!is.na(F_SEX) & !is.na(SNSFEEL_W56)) %>%
       ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
@@ -652,14 +745,16 @@ server <- function(input, output, session) {
   )
   
   
-  output$texta2 <- renderUI(HTML("This application provides an analysis of and means to 
+  output$aboutprojtext<- renderUI(HTML("This application provides an analysis of and means to 
         interact with data from the 2019 Pew Research Center survey on the 
                            intersection between romantic relationships and technology. The set of participants recruited for the survey, part of the American Trends Panel, were designed to serve as a representative sample of the US (Pew Research Center, 2019). 
                            Download the dataset with a Pew Research Center account and view their 
                            analysis <a href ='https://www.pewresearch.org/internet/2020/05/08/dating-and-relationships-in-the-digital-age/'>here</a> (Vogels & Anderson, 2020)."))
-  output$textb <- renderText("Women tend to experience more negative feelings regarding relationships and social media. For people who used online dating, more women felt pessimistic (41% of all women asked this question) than men (35%). 
-                             Additionally, more women in committed relationships reported feeling insecure because of their partner's social media use (30%) than men (15%).")
-  output$textc <- renderText("This sample is largely married (40%), straight (68%), politically moderate (35%) or liberal (26%), non-Hispanic white (68%), and ages 30-64 (64%) with a college degree or higher (46%).")
+  output$onlinenegfeelingstext <- renderText("Women tend to experience more negative feelings regarding relationships and social media. For people who used online dating, more women felt pessimistic (41% of all women asked this question) than men (35%).")
+  
+  
+  output$textbtwo <- renderText("Additionally, more women in committed relationships reported feeling insecure because of their partner's social media use (30%) than men (15%).")
+  output$characterizing_sample_text <- renderText("This sample is largely married (40%), straight (68%), politically moderate (35%) or liberal (26%), non-Hispanic white (68%), and ages 30-64 (64%) with a college degree or higher (46%).")
   
   output$characterizingsamplemstatus <- renderPlotly({
     g <- raw_data %>%
@@ -809,6 +904,340 @@ server <- function(input, output, session) {
     ggplotly(g, tooltip = 'text')
   })
   
+  output$thingsindatinglife <- renderPlotly({
+    raw_data$FAMSURV19DATING_W56 <- factor(raw_data$FAMSURV19DATING_W56,levels = c("Not at all well", "Not too well", "Fairly well", "Very well", "Refused"))
+    
+    g <- ggplot((raw_data %>%
+                   
+                   ## remove NAs https://www.edureka.co/community/634/how-to-remove-na-values-with-dplyr-filter
+                   filter(!is.na(FAMSURV19DATING_W56)) %>%
+                   group_by(FAMSURV19DATING_W56) %>%
+                   summarize(
+                     n = n(),
+                   ) %>%
+                   mutate(
+                     pct = n/sum(n)
+                   )), aes(
+                     x = FAMSURV19DATING_W56,
+                     y = n,
+                     text = paste(paste("Number of Participants:", n, sep = " "), paste("Percentage:", paste(100*round(pct, digits = 2), "%", sep = ""), sep = " "), sep = "<br>")
+                   )) +
+      geom_col() +
+      ggtitle("How Participants' Dating Lives are Going") +
+      xlab("Overall, would you say that things in your dating life are going...") +
+      ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+      scale_y_continuous("Number of Participants", expand = c(0,0)) +
+      theme(panel.background = element_blank(), axis.ticks = element_blank(), 
+            axis.line = element_line(color = "black"),
+            #Attempt to fix margin - does not work
+            #axis.title.x = element_text(margin = margin(t = 20, r = 0, b = 20, l = 0)))
+            #This does not work either:
+            axis.title.x = element_text(vjust = 1))
+    
+    ## tooltip from 
+    ## https://stackoverflow.com/questions/40598011/how-to-customize-hover-information-in-ggplotly-object/40598524
+    ## and
+    ## https://www.rdocumentation.org/packages/plotly/versions/4.9.3/topics/ggplotly
+    
+    ggplotly(g, tooltip = "text")
+  })
+  
+  output$thingsdaatinglifetext <- renderText("The majority of participants (69%) said that things in their dating
+                                             life are going not at all well or not too well. This highlights the trouble
+                                             many are facing with modern dating, whether participants' problems are technology related or not.")
+ 
+  
+  output$tenyears <- renderPlotly({
+    raw_data$DATE10YR_W56 <- factor(raw_data$DATE10YR_W56,levels = c("Harder today", "About the same", "Easier today", "Refused"))
+    
+    g <- ggplot((raw_data %>%
+                   
+                   ## remove NAs https://www.edureka.co/community/634/how-to-remove-na-values-with-dplyr-filter
+                   filter(!is.na(DATE10YR_W56)) %>%
+                   group_by(DATE10YR_W56) %>%
+                   summarize(
+                     n = n(),
+                   ) %>%
+                   mutate(
+                     pct = n/sum(n)
+                   )), aes(
+                     x = DATE10YR_W56,
+                     y = n,
+                     text = paste(paste("Number of Participants:", n, sep = " "), paste("Percentage:", paste(100*round(pct, digits = 2), "%", sep = ""), sep = " "), sep = "<br>")
+                   )) +
+      geom_col() +
+      xlab("Compared to 10 years ago, for most people, do you think dating is...") +
+      ggtitle("Difficulty of Dating Now Compared to the Past") +
+      ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+      scale_y_continuous("Number of Participants", expand = c(0,0)) +
+      theme(panel.background = element_blank(), axis.ticks = element_blank(), 
+            axis.line = element_line(color = "black"),
+            #Attempt to fix margin - does not work
+            #axis.title.x = element_text(margin = margin(t = 20, r = 0, b = 20, l = 0)))
+            #This does not work either:
+            axis.title.x = element_text(vjust = 1))
+    
+    ## tooltip from 
+    ## https://stackoverflow.com/questions/40598011/how-to-customize-hover-information-in-ggplotly-object/40598524
+    ## and
+    ## https://www.rdocumentation.org/packages/plotly/versions/4.9.3/topics/ggplotly
+    
+    ggplotly(g, tooltip = "text")
+    
+  })
+  
+  output$tenyearstext <- renderText("A plurality of respondents said that dating is harder today than it was 10 years
+                                    ago (48%), while only 18% think that dating is easier today.")
+ 
+  
+  output$overallinterestingfindingstext <- renderText("Many, but not all, participants expressed struggles or dissatisfaction
+                                                      with modern dating. On this survey, which was collected before the COVID-19 pandemic,
+                                                      participants identifying as male and female, and across ages, reported difficulties.")
+  
+  output$datinglifebysex <- renderPlotly({
+    raw_data$FAMSURV19DATING_W56 <- factor(raw_data$FAMSURV19DATING_W56,levels = c("Not at all well", "Not too well", "Fairly well", "Very well", "Refused"))
+    
+    g <- raw_data %>%
+      filter(!is.na(FAMSURV19DATING_W56)) %>%
+      filter(!is.na(F_SEX)) %>%
+      ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
+      group_by(FAMSURV19DATING_W56,
+               F_SEX
+      ) %>%
+      summarize(
+        n = n()
+      ) %>%
+      ggplot(aes(
+        x = FAMSURV19DATING_W56,
+        y = F_SEX,
+        fill = n
+      )) +
+      geom_tile() +
+      ggtitle("How Participants' Dating Lives are Going, Sorted by Sex") +
+      
+      ## HTML color codes from https://htmlcolorcodes.com/
+      ## scale fill gradient idea and syntax from https://ggplot2.tidyverse.org/reference/scale_gradient.html
+      scale_fill_gradient(low = "#FFFFFF", high = "#000773", na.value = "#8E8E8E") +
+      xlab("Overall, would you say that things in your dating life are going...") +
+      ylab("Sex") +
+      ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
+    
+    ## tooltip from 
+    ## https://stackoverflow.com/questions/40598011/how-to-customize-hover-information-in-ggplotly-object/40598524
+    ## and
+    ## https://www.rdocumentation.org/packages/plotly/versions/4.9.3/topics/ggplotly
+    ggplotly(g, tooltip = "fill")
+  })
+  
+  output$datinglifebyage <- renderPlotly({
+    raw_data$FAMSURV19DATING_W56 <- factor(raw_data$FAMSURV19DATING_W56,levels = c("Not at all well", "Not too well", "Fairly well", "Very well", "Refused"))
+    
+    g <- raw_data %>%
+      filter(!is.na(FAMSURV19DATING_W56)) %>%
+      filter(!is.na(F_AGECAT)) %>%
+      ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
+      group_by(FAMSURV19DATING_W56,
+               F_AGECAT
+      ) %>%
+      summarize(
+        n = n()
+      ) %>%
+      ggplot(aes(
+        x = FAMSURV19DATING_W56,
+        y = F_AGECAT,
+        fill = n
+      )) +
+      geom_tile() +
+      ggtitle("How Participants' Dating Lives are Going, Sorted by Age") +
+      
+      ## HTML color codes from https://htmlcolorcodes.com/
+      ## scale fill gradient idea and syntax from https://ggplot2.tidyverse.org/reference/scale_gradient.html
+      scale_fill_gradient(low = "#FFFFFF", high = "#000773", na.value = "#8E8E8E") +
+      xlab("Overall, would you say that things in your dating life are going...") +
+      ylab("Age") +
+      ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
+    
+    ## tooltip from 
+    ## https://stackoverflow.com/questions/40598011/how-to-customize-hover-information-in-ggplotly-object/40598524
+    ## and
+    ## https://www.rdocumentation.org/packages/plotly/versions/4.9.3/topics/ggplotly
+    ggplotly(g, tooltip = "fill")
+  })
+  
+  
+  output$summarydatinglife <- renderText("Findings about most people having some trouble with their dating life
+                                         are found across ages and sexes.")
+  
+  
+  output$tenyearsbysex <- renderPlotly({
+    raw_data$DATE10YR_W56 <- factor(raw_data$DATE10YR_W56,levels = c("Harder today", "About the same", "Easier today", "Refused"))
+    
+    g <- raw_data %>%
+      filter(!is.na(DATE10YR_W56)) %>%
+      filter(!is.na(F_SEX)) %>%
+      ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
+      group_by(DATE10YR_W56,
+               F_SEX
+      ) %>%
+      summarize(
+        n = n()
+      ) %>%
+      ggplot(aes(
+        x = DATE10YR_W56,
+        y = F_SEX,
+        fill = n
+      )) +
+      geom_tile() +
+      ggtitle("Difficulty of Dating Now Compared to the Past, Sorted by Sex") +
+      
+      ## HTML color codes from https://htmlcolorcodes.com/
+      ## scale fill gradient idea and syntax from https://ggplot2.tidyverse.org/reference/scale_gradient.html
+      scale_fill_gradient(low = "#FFFFFF", high = "#000773", na.value = "#8E8E8E") +
+      xlab("Compared to 10 years ago, for most people, do you think dating is...") +
+      ylab("Sex") +
+      ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
+    
+    ## tooltip from 
+    ## https://stackoverflow.com/questions/40598011/how-to-customize-hover-information-in-ggplotly-object/40598524
+    ## and
+    ## https://www.rdocumentation.org/packages/plotly/versions/4.9.3/topics/ggplotly
+    ggplotly(g, tooltip = "fill")
+  })
+  
+  output$tenyearsbyage <- renderPlotly({
+    raw_data$DATE10YR_W56 <- factor(raw_data$DATE10YR_W56,levels = c("Harder today", "About the same", "Easier today", "Refused"))
+    
+    g <- raw_data %>%
+      filter(!is.na(DATE10YR_W56)) %>%
+      filter(!is.na(F_AGECAT)) %>%
+      ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
+      group_by(DATE10YR_W56,
+               F_AGECAT
+      ) %>%
+      summarize(
+        n = n()
+      ) %>%
+      ggplot(aes(
+        x = DATE10YR_W56,
+        y = F_AGECAT,
+        fill = n
+      )) +
+      geom_tile() +
+      ggtitle("Difficulty of Dating Now Compared to the Past, Sorted by Age") +
+      
+      ## HTML color codes from https://htmlcolorcodes.com/
+      ## scale fill gradient idea and syntax from https://ggplot2.tidyverse.org/reference/scale_gradient.html
+      scale_fill_gradient(low = "#FFFFFF", high = "#000773", na.value = "#8E8E8E") +
+      xlab("Compared to 10 years ago, for most people, do you think dating is...") +
+      ylab("Age") +
+      ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
+    
+    ## tooltip from 
+    ## https://stackoverflow.com/questions/40598011/how-to-customize-hover-information-in-ggplotly-object/40598524
+    ## and
+    ## https://www.rdocumentation.org/packages/plotly/versions/4.9.3/topics/ggplotly
+    ggplotly(g, tooltip = "fill")
+  })
+  
+  output$summarytenyears <- renderText("Those who identify as female seem to be more pessimistic about current dating conditions than those identifying as
+                                       male, and younger people (under the age of 49) seem to be somewhat more pessimistic than those
+                                       over the age of 50.")
+  
+  output$effectofonline <- renderPlotly({
+    raw_data$ONIMPACT_W56 <- factor(raw_data$ONIMPACT_W56,levels = c("Mostly negative effect", "Neither positive or negative effect", "Mostly positive effect", "Refused"))
+    
+    g <- ggplot((raw_data %>%
+                   
+                   ## remove NAs https://www.edureka.co/community/634/how-to-remove-na-values-with-dplyr-filter
+                   filter(!is.na(ONIMPACT_W56)) %>%
+                   group_by(ONIMPACT_W56) %>%
+                   summarize(
+                     n = n(),
+                   ) %>%
+                   mutate(
+                     pct = n/sum(n)
+                   )), aes(
+                     x = ONIMPACT_W56,
+                     y = n,
+                     text = paste(paste("Number of Participants:", n, sep = " "), paste("Percentage:", paste(100*round(pct, digits = 2), "%", sep = ""), sep = " "), sep = "<br>")
+                   )) +
+      geom_col() +
+      ggtitle("Perceived Effect of Online Datinig") +
+      xlab(str_wrap("Overall, what type of effect would you say online dating sites and dating apps have had on dating and relationships?")) +
+      ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+      scale_y_continuous("Number of Participants", expand = c(0,0)) +
+      theme(panel.background = element_blank(), axis.ticks = element_blank(), 
+            axis.line = element_line(color = "black"),
+            #Attempt to fix margin - does not work
+            #axis.title.x = element_text(margin = margin(t = 20, r = 0, b = 20, l = 0)))
+            #This does not work either:
+            axis.title.x = element_text(vjust = 1))
+    
+    ## tooltip from 
+    ## https://stackoverflow.com/questions/40598011/how-to-customize-hover-information-in-ggplotly-object/40598524
+    ## and
+    ## https://www.rdocumentation.org/packages/plotly/versions/4.9.3/topics/ggplotly
+    
+    ggplotly(g, tooltip = "text")
+  })
+  
+  output$summaryonline <- renderText("Despite these findings about pesimission with regard to
+                                     recent dating in general, people's current dating lives, and the downsides of online dating,
+                                     the participants were mixed on whether online dating has improved
+                                     or worsened online dating in general. A plurality of participants (48%)
+                                     said that online dating had neither effect. This brings up the question,
+                                     if online dating is not what is making modern dating more difficult, then what is?")
+  
+  
+  output$bullingharass <- renderPlotly({
+    raw_data$ONPROBLEM.a_W56 <- factor(raw_data$ONPROBLEM.a_W56,levels = c("Not at all common", "Not too common", "Somewhat common", "Very common", "Refused"))
+    
+    g <- ggplot((raw_data %>%
+                   
+                   ## remove NAs https://www.edureka.co/community/634/how-to-remove-na-values-with-dplyr-filter
+                   filter(!is.na(ONPROBLEM.a_W56)) %>%
+                   group_by(ONPROBLEM.a_W56) %>%
+                   summarize(
+                     n = n(),
+                   ) %>%
+                   mutate(
+                     pct = n/sum(n)
+                   )), aes(
+                     x = ONPROBLEM.a_W56,
+                     y = n,
+                     text = paste(paste("Number of Participants:", n, sep = " "), paste("Percentage:", paste(100*round(pct, digits = 2), "%", sep = ""), sep = " "), sep = "<br>")
+                   )) +
+      geom_col() +
+      ggtitle("Perceived Prevalence of Bullying/Harassment in Online Dating") +
+      xlab(str_wrap("How common is people being harassed or bullied on online dating sites and dating apps?")) +
+      ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+      scale_y_continuous("Number of Participants", expand = c(0,0)) +
+      theme(panel.background = element_blank(), axis.ticks = element_blank(), 
+            axis.line = element_line(color = "black"),
+            #Attempt to fix margin - does not work
+            #axis.title.x = element_text(margin = margin(t = 20, r = 0, b = 20, l = 0)))
+            #This does not work either:
+            axis.title.x = element_text(vjust = 1))
+    
+    ## tooltip from 
+    ## https://stackoverflow.com/questions/40598011/how-to-customize-hover-information-in-ggplotly-object/40598524
+    ## and
+    ## https://www.rdocumentation.org/packages/plotly/versions/4.9.3/topics/ggplotly
+    
+    ggplotly(g, tooltip = "text")
+  })
+  
+  output$bullingharasstext <- renderText("Bullying and harassment appears to be a problem on online dating apps and 
+                                         websites. 59% of participants said that this was somewhat or very common, 
+                                         a concerning statistic.")
 }
 
 # Run the application
