@@ -478,7 +478,7 @@ server <- function(input, output, session) {
       xlab(str_wrap(input$variable1)) +
       ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
       scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
-      scale_y_continuous(expand = c(0,0)) +
+      scale_y_continuous("Number of Participants", expand = c(0,0)) +
       theme(panel.background = element_blank(), axis.ticks = element_blank(), 
             axis.line = element_line(color = "black"),
             #Attempt to fix margin - does not work
