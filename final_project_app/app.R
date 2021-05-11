@@ -422,6 +422,8 @@ ui <- fluidPage(
             column(6, 
                    plotlyOutput("jealousy_by_sex"),
                    br(),
+                   textOutput("jealousypartaskedtext"),
+                   br(),
                    br()
             ),
             column(2,
@@ -777,6 +779,7 @@ server <- function(input, output, session) {
     raw_data$SNSFEEL_W56 <- factor(raw_data$SNSFEEL_W56,levels = c("Yes, have felt this way", "No, have never felt this way", "Refused"))
     
     g <- raw_data %>%
+      filter(F_SEX != "Refused" & SNSFEEL_W56 != "Refused") %>%
       filter(!is.na(F_SEX) & !is.na(SNSFEEL_W56)) %>%
       ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
       group_by_(
@@ -812,7 +815,7 @@ server <- function(input, output, session) {
   
   
   output$textbtwo <- renderText("We thought that, perhaps jealousy and insecurity inflicted by social media
-                                play a role here. We note that more females in committed relationships reported feeling insecure because of their partner's social media use (30%) than males (15%). However, both of these
+                                play a role here. We note that more females in committed relationships reported feeling insecure because of their partner's social media use (29%) than males (15%). However, both of these
                                 proportions are relatively low, so social media jealousy may not account for dissatisfaction with dating.")
   output$characterizing_sample_text <- renderText("This sample is largely married (40%), straight (68%), politically moderate (36%) or liberal (27%), non-Hispanic white (69%), and ages 30-64 (64%) with a college degree or higher (46%).")
   
@@ -1240,6 +1243,7 @@ server <- function(input, output, session) {
     g <- ggplot((raw_data %>%
                    
                    ## remove NAs https://www.edureka.co/community/634/how-to-remove-na-values-with-dplyr-filter
+                   filter(ONIMPACT_W56 != "Refused") %>%
                    filter(!is.na(ONIMPACT_W56)) %>%
                    group_by(ONIMPACT_W56) %>%
                    summarize(
@@ -1276,7 +1280,7 @@ server <- function(input, output, session) {
   output$summaryonline <- renderText("Despite these findings about pesimission with regard to
                                      recent dating in general, people's current dating lives, and the downsides of online dating,
                                      the participants were mixed on whether online dating has improved
-                                     or worsened dating in general. A plurality of participants (48%)
+                                     or worsened dating in general. A plurality of participants (49%)
                                      said that online dating had neither effect. This brings up the question,
                                      if online dating is not what is making modern dating more difficult, then what is?")
   
@@ -1781,6 +1785,41 @@ server <- function(input, output, session) {
     
     total_people <- raw_data %>%
       select(ONIMPACT_W56) %>%
+      summarize(
+        n = n()
+      ) %>%
+      pull(n[1])
+    
+    text <- paste("Note:", 
+                  paste(
+                    paste(total_asked, total_people, sep = "/"), 
+                    "participants answered this question."), sep = " ")
+  })
+  
+  output$jealousypartaskedtext <- renderText({
+    num_refused_num <- raw_data %>%
+      filter(SNSFEEL_W56 == "Refused") %>%
+      summarize(
+        num_refused = n()
+      ) %>%
+      pull(num_refused[1])
+    
+    
+    total_asked <- raw_data %>%
+      select(SNSFEEL_W56) %>%
+      summarize(
+        n = n(),
+        
+        ## count NAs https://stackoverflow.com/questions/44290704/count-non-na-values-by-group
+        num_na = sum(is.na(SNSFEEL_W56)),
+        num_asked = n - (num_na)
+      ) %>%
+      pull(num_asked[1])
+    
+    total_asked <- total_asked - num_refused_num
+    
+    total_people <- raw_data %>%
+      select(SNSFEEL_W56) %>%
       summarize(
         n = n()
       ) %>%
