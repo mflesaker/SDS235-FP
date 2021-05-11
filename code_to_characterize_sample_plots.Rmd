@@ -550,39 +550,39 @@ ggplotly(g, tooltip = "fill")
 ```
 
 ```{r}
-raw_data$PARTNERDISTRACT_W56 <- factor(raw_data$PARTNERDISTRACT_W56,levels = c("Never", "Rarely", "Sometimes", "Often", "Refused"))
+total_asked <- raw_data %>%
+      select(
+        lookup_questions %>%
+          filter(questions == "Marital Status") %>%
+          pull(var_names[1])) %>%
+      summarize(
+        n = n(),
+        
+        ## count NAs https://stackoverflow.com/questions/44290704/count-non-na-values-by-group
+        num_na = sum(is.na(get(lookup_questions %>%
+                                      filter(questions == "Marital Status") %>%
+                                      pull(var_names[1])))),
+        num_refused = sum((get(lookup_questions %>%
+                                      filter(questions == "Marital Status") %>%
+                                      pull(var_names[1]))) == "Refused"),
+        num_asked = n - (num_na + num_refused)
+      ) %>%
+      pull(num_asked[1])
     
-    g <- ggplot((raw_data %>%
-                   
-                   ## remove NAs https://www.edureka.co/community/634/how-to-remove-na-values-with-dplyr-filter
-                   filter(!is.na(PARTNERDISTRACT_W56)) %>%
-                   group_by(PARTNERDISTRACT_W56) %>%
-                   summarize(
-                     n = n(),
-                   ) %>%
-                   mutate(
-                     pct = n/sum(n)
-                   )), aes(
-                     x = PARTNERDISTRACT_W56,
-                     y = n,
-                     text = paste(paste("Number of Participants:", n, sep = " "), paste("Percentage:", paste(100*round(pct, digits = 2), "%", sep = ""), sep = " "), sep = "<br>")
-                   )) +
-      geom_col() +
-      ggtitle("Frequency of Distraction by Cell Phone in Relationships") +
-      xlab(str_wrap("How often, if ever, do you feel as if your spouse or partner is distracted by their cellphone when you are trying to have a conversation with them?")) +
-      ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
-      scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
-      scale_y_continuous("Number of Participants", expand = c(0,0)) +
-      theme(panel.background = element_blank(), axis.ticks = element_blank(), 
-            axis.line = element_line(color = "black"),
-            axis.title.x = element_text(vjust = 1))
+    total_people <- raw_data %>%
+      select(
+        lookup_questions %>%
+          filter(questions == "Marital Status") %>%
+          pull(var_names[1])) %>%
+      summarize(
+        n = n()
+      ) %>%
+      pull(n[1])
     
-    ## tooltip from 
-    ## https://stackoverflow.com/questions/40598011/how-to-customize-hover-information-in-ggplotly-object/40598524
-    ## and
-    ## https://www.rdocumentation.org/packages/plotly/versions/4.9.3/topics/ggplotly
-    
-    ggplotly(g, tooltip = "text")
+    text <- paste("Note:", 
+                  paste(
+                    paste(total_asked, total_people, sep = "/"), 
+                    "participants answered this question."), sep = " ")
 ```
 
 

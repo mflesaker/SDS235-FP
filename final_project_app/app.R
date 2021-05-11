@@ -269,9 +269,13 @@ ui <- fluidPage(
             column(5,
                    plotlyOutput("characterizingsamplemstatus"),
                    br(),
+                   textOutput("partaskedmstatus"),
+                   br(),
                    br()),
             column(5,
                    plotlyOutput("characterizingsampleorientation"),
+                   br(),
+                   textOutput("partansweredorientationi"),
                    br(),
                    br()
             ),
@@ -747,6 +751,8 @@ server <- function(input, output, session) {
     ggplotly(g, tooltip = "fill")
   })
   
+  
+  
   output$jealousy_by_sex <- renderPlotly({
     raw_data$SNSFEEL_W56 <- factor(raw_data$SNSFEEL_W56,levels = c("Yes, have felt this way", "No, have never felt this way", "Refused"))
     
@@ -792,6 +798,8 @@ server <- function(input, output, session) {
   
   output$characterizingsamplemstatus <- renderPlotly({
     g <- raw_data %>%
+      filter(MARITAL_W56 != "Refused") %>%
+      filter(!is.na(MARITAL_W56)) %>%
       group_by(MARITAL_W56) %>%
       summarize(
         n = n()
@@ -817,6 +825,8 @@ server <- function(input, output, session) {
   
   output$characterizingsampleorientation <- renderPlotly({
     g <- raw_data %>%
+      filter(ORIENTATIONMOD_W56 != "Refused") %>%
+      filter(!is.na(ORIENTATIONMOD_W56)) %>%
       group_by(ORIENTATIONMOD_W56) %>%
       summarize(
         n = n()
@@ -1358,6 +1368,79 @@ server <- function(input, output, session) {
                                      and committed relationships alike difficult.")
   
   output$finaltext <- renderText("Use the Interactive Dashboard to explore more reasons why some are dissatisfied, and learn why some are happy with modern technology in dating and relationships.")
+  
+  
+  output$partaskedmstatus <- renderText({
+    total_asked <- raw_data %>%
+      select(
+        lookup_questions %>%
+          filter(questions == "Marital Status") %>%
+          pull(var_names[1])) %>%
+      summarize(
+        n = n(),
+        
+        ## count NAs https://stackoverflow.com/questions/44290704/count-non-na-values-by-group
+        num_na = sum(is.na(get(lookup_questions %>%
+                                 filter(questions == "Marital Status") %>%
+                                 pull(var_names[1])))),
+        num_refused = sum((get(lookup_questions %>%
+                                 filter(questions == "Marital Status") %>%
+                                 pull(var_names[1]))) == "Refused"),
+        num_asked = n - (num_na + num_refused)
+      ) %>%
+      pull(num_asked[1])
+    
+    total_people <- raw_data %>%
+      select(
+        lookup_questions %>%
+          filter(questions == "Marital Status") %>%
+          pull(var_names[1])) %>%
+      summarize(
+        n = n()
+      ) %>%
+      pull(n[1])
+    
+    text <- paste("Note:", 
+                  paste(
+                    paste(total_asked, total_people, sep = "/"), 
+                    "participants answered this question."), sep = " ")
+  })
+  
+  output$partansweredorientationi <- renderText({
+    total_asked <- raw_data %>%
+      select(
+        lookup_questions %>%
+          filter(questions == "Sexual orientation") %>%
+          pull(var_names[1])) %>%
+      summarize(
+        n = n(),
+        
+        ## count NAs https://stackoverflow.com/questions/44290704/count-non-na-values-by-group
+        num_na = sum(is.na(get(lookup_questions %>%
+                                 filter(questions == "Sexual orientation") %>%
+                                 pull(var_names[1])))),
+        num_refused = sum((get(lookup_questions %>%
+                                 filter(questions == "Sexual orientation") %>%
+                                 pull(var_names[1]))) == "Refused"),
+        num_asked = n - (num_na + num_refused)
+      ) %>%
+      pull(num_asked[1])
+    
+    total_people <- raw_data %>%
+      select(
+        lookup_questions %>%
+          filter(questions == "Sexual orientation") %>%
+          pull(var_names[1])) %>%
+      summarize(
+        n = n()
+      ) %>%
+      pull(n[1])
+    
+    text <- paste("Note:", 
+                  paste(
+                    paste(total_asked, total_people, sep = "/"), 
+                    "participants answered this question."), sep = " ")
+  })
   
   }
 
