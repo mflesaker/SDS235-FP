@@ -821,7 +821,7 @@ server <- function(input, output, session) {
                            intersection between romantic relationships and technology. The set of participants recruited for the survey, part of the American Trends Panel, were designed to serve as a representative sample of the US (Pew Research Center, 2019). 
                            Download the dataset with a Pew Research Center account and view their 
                            analysis <a href ='https://www.pewresearch.org/internet/2020/05/08/dating-and-relationships-in-the-digital-age/'>here</a> (Vogels & Anderson, 2020)."))
-  output$onlinenegfeelingstext <- renderText("Now, we will turn specifically to online dating. Here, we notice that females tend to experience more negative feelings regarding online dating. For people who used online dating, more females felt pessimistic (41% of all females asked this question) than males (35%).")
+  output$onlinenegfeelingstext <- renderText("Now, we will turn specifically to online dating, as these apps and sites are a major component of modern dating. Here, we notice that females tend to experience more negative feelings regarding online dating. For people who used online dating, more females felt pessimistic (41% of all females asked this question) than males (35%).")
   
   
   output$textbtwo <- renderText("We thought that, perhaps jealousy and insecurity inflicted by social media
@@ -1075,7 +1075,8 @@ server <- function(input, output, session) {
     
   })
   
-  output$tenyearstext <- renderText("A plurality of respondents said that dating is harder today than it was 10 years
+  output$tenyearstext <- renderText("Participants also believe that dating has gotten more difficult over time.
+                            A plurality of respondents said that dating is harder today than it was 10 years
                                     ago (48%), while only 18% think that dating is easier today.")
  
   
