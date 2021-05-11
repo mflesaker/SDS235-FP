@@ -322,6 +322,8 @@ ui <- fluidPage(
             column(6,
                    plotlyOutput("thingsindatinglife"),
                    br(),
+                   textOutput("partanswerthings"),
+                   br(),
                   textOutput("thingsdaatinglifetext"),
                   br(),
                   br()),
@@ -347,6 +349,8 @@ ui <- fluidPage(
           fluidRow(column(3),
             column(6,
                  plotlyOutput("tenyears"),
+                 br(),
+                 textOutput("partanswer10years"),
                  br(),
                  textOutput("tenyearstext"),
                  br(),
@@ -375,6 +379,8 @@ ui <- fluidPage(
                    column(6,
                           plotlyOutput("feelings_by_sex"),
                           br(),
+                          textOutput("partanswerfeelings"),
+                          br(),
                           textOutput("onlinenegfeelingstext"),
                           br(),
                           br()
@@ -385,6 +391,8 @@ ui <- fluidPage(
           fluidRow(column(3),
                    column(6,
                           plotlyOutput("bullingharass"),
+                          br(),
+                          textOutput("partanswerbullyharass"),
                           br(),
                           textOutput("bullingharasstext"),
                           br(),
@@ -397,6 +405,8 @@ ui <- fluidPage(
             column(2),
             column(6, 
                    plotlyOutput("effectofonline"),
+                   br(),
+                   textOutput("effectofonlinetext"),
                    br(),
                    br()
             ),
@@ -735,6 +745,8 @@ server <- function(input, output, session) {
     raw_data$ONFEEL.c_W56 <- factor(raw_data$ONFEEL.c_W56,levels = c("Frustrated", "Neither", "Hopeful", "Refused"))
     
     g <- raw_data %>%
+      filter(F_SEX != "Refused") %>%
+      filter(ONFEEL.c_W56 != "Refused") %>%
       filter(!is.na(F_SEX) & !is.na(ONFEEL.c_W56)) %>%
       ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
       group_by_(
@@ -971,6 +983,7 @@ server <- function(input, output, session) {
                    
                    ## remove NAs https://www.edureka.co/community/634/how-to-remove-na-values-with-dplyr-filter
                    filter(!is.na(FAMSURV19DATING_W56)) %>%
+                   filter(FAMSURV19DATING_W56 != "Refused") %>%
                    group_by(FAMSURV19DATING_W56) %>%
                    summarize(
                      n = n(),
@@ -1003,7 +1016,7 @@ server <- function(input, output, session) {
     ggplotly(g, tooltip = "text")
   })
   
-  output$thingsdaatinglifetext <- renderText("The majority of participants (69%) said that things in their dating
+  output$thingsdaatinglifetext <- renderText("The majority of participants (70%) asked this question said that things in their dating
                                              life are going not at all well or not too well. This highlights the trouble
                                              many are facing with modern dating, whether participants' problems are technology related or not.")
  
@@ -1015,6 +1028,7 @@ server <- function(input, output, session) {
                    
                    ## remove NAs https://www.edureka.co/community/634/how-to-remove-na-values-with-dplyr-filter
                    filter(!is.na(DATE10YR_W56)) %>%
+                   filter(DATE10YR_W56 != "Refused") %>%
                    group_by(DATE10YR_W56) %>%
                    summarize(
                      n = n(),
@@ -1065,6 +1079,8 @@ server <- function(input, output, session) {
     g <- raw_data %>%
       filter(!is.na(FAMSURV19DATING_W56)) %>%
       filter(!is.na(F_SEX)) %>%
+      filter(F_SEX != "Refused") %>%
+      filter(FAMSURV19DATING_W56 != "Refused") %>%
       ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
       group_by(FAMSURV19DATING_W56,
                F_SEX
@@ -1101,6 +1117,8 @@ server <- function(input, output, session) {
     g <- raw_data %>%
       filter(!is.na(FAMSURV19DATING_W56)) %>%
       filter(!is.na(F_AGECAT)) %>%
+      filter(F_AGECAT != "DK/REF") %>%
+      filter(FAMSURV19DATING_W56 != "Refused") %>%
       ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
       group_by(FAMSURV19DATING_W56,
                F_AGECAT
@@ -1142,6 +1160,8 @@ server <- function(input, output, session) {
     g <- raw_data %>%
       filter(!is.na(DATE10YR_W56)) %>%
       filter(!is.na(F_SEX)) %>%
+      filter(F_SEX != "Refused") %>%
+      filter(DATE10YR_W56 != "Refused") %>%
       ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
       group_by(DATE10YR_W56,
                F_SEX
@@ -1178,6 +1198,8 @@ server <- function(input, output, session) {
     g <- raw_data %>%
       filter(!is.na(DATE10YR_W56)) %>%
       filter(!is.na(F_AGECAT)) %>%
+      filter(F_AGECAT != "DK/REF") %>%
+      filter(DATE10YR_W56 != "Refused") %>%
       ### group_by_ from https://stackoverflow.com/questions/54482025/call-input-in-shiny-for-a-group-by-function
       group_by(DATE10YR_W56,
                F_AGECAT
@@ -1266,6 +1288,7 @@ server <- function(input, output, session) {
                    
                    ## remove NAs https://www.edureka.co/community/634/how-to-remove-na-values-with-dplyr-filter
                    filter(!is.na(ONPROBLEM.a_W56)) %>%
+                   filter(ONPROBLEM.a_W56 != "Refused") %>%
                    group_by(ONPROBLEM.a_W56) %>%
                    summarize(
                      n = n(),
@@ -1299,7 +1322,7 @@ server <- function(input, output, session) {
   })
   
   output$bullingharasstext <- renderText("Bullying and harassment appears to be a problem on online dating apps and 
-                                         websites. 59% of participants said that this was somewhat or very common, 
+                                         websites. 61% of participants who answered said that this was somewhat or very common, 
                                          a concerning statistic.")
 
   
@@ -1601,6 +1624,174 @@ server <- function(input, output, session) {
                     paste(total_asked, total_people, sep = "/"), 
                     "participants answered this question."), sep = " ")
   })
+  
+  output$partanswer10years <- renderText({
+    total_asked <- raw_data %>%
+      select(DATE10YR_W56) %>%
+      summarize(
+        n = n(),
+        
+        ## count NAs https://stackoverflow.com/questions/44290704/count-non-na-values-by-group
+        num_na = sum(is.na(DATE10YR_W56)),
+        num_refused = sum(DATE10YR_W56 == "Refused"),
+        num_asked = n - (num_na + num_refused)
+      ) %>%
+      pull(num_asked[1])
+    
+    total_people <- raw_data %>%
+      select(DATE10YR_W56) %>%
+      summarize(
+        n = n()
+      ) %>%
+      pull(n[1])
+    
+    text <- paste("Note:", 
+                  paste(
+                    paste(total_asked, total_people, sep = "/"), 
+                    "participants answered this question."), sep = " ")
+  })
+  
+  output$partanswerthings <- renderText({
+    num_refused_num <- raw_data %>%
+      filter(FAMSURV19DATING_W56 == "Refused") %>%
+      summarize(
+        num_refused = n()
+      ) %>%
+      pull(num_refused[1])
+    
+    
+    total_asked <- raw_data %>%
+      select(FAMSURV19DATING_W56) %>%
+      summarize(
+        n = n(),
+        
+        ## count NAs https://stackoverflow.com/questions/44290704/count-non-na-values-by-group
+        num_na = sum(is.na(FAMSURV19DATING_W56)),
+        num_asked = n - (num_na)
+      ) %>%
+      pull(num_asked[1])
+    
+    total_asked <- total_asked - num_refused_num
+    
+    total_people <- raw_data %>%
+      select(FAMSURV19DATING_W56) %>%
+      summarize(
+        n = n()
+      ) %>%
+      pull(n[1])
+    
+    text <- paste("Note:", 
+                  paste(
+                    paste(total_asked, total_people, sep = "/"), 
+                    "participants answered this question."), sep = " ")
+  })
+  
+  
+  output$partanswerfeelings <- renderText({
+    num_refused_num <- raw_data %>%
+      filter(ONFEEL.c_W56 == "Refused") %>%
+      summarize(
+        num_refused = n()
+      ) %>%
+      pull(num_refused[1])
+    
+    
+    total_asked <- raw_data %>%
+      select(ONFEEL.c_W56) %>%
+      summarize(
+        n = n(),
+        
+        ## count NAs https://stackoverflow.com/questions/44290704/count-non-na-values-by-group
+        num_na = sum(is.na(ONFEEL.c_W56)),
+        num_asked = n - (num_na)
+      ) %>%
+      pull(num_asked[1])
+    
+    total_asked <- total_asked - num_refused_num
+    
+    total_people <- raw_data %>%
+      select(ONFEEL.c_W56) %>%
+      summarize(
+        n = n()
+      ) %>%
+      pull(n[1])
+    
+    text <- paste("Note:", 
+                  paste(
+                    paste(total_asked, total_people, sep = "/"), 
+                    "participants answered this question."), sep = " ")
+  })
+  
+  output$partanswerbullyharass <- renderText({
+    num_refused_num <- raw_data %>%
+      filter(ONPROBLEM.a_W56 == "Refused") %>%
+      summarize(
+        num_refused = n()
+      ) %>%
+      pull(num_refused[1])
+    
+    
+    total_asked <- raw_data %>%
+      select(ONPROBLEM.a_W56) %>%
+      summarize(
+        n = n(),
+        
+        ## count NAs https://stackoverflow.com/questions/44290704/count-non-na-values-by-group
+        num_na = sum(is.na(ONPROBLEM.a_W56)),
+        num_asked = n - (num_na)
+      ) %>%
+      pull(num_asked[1])
+    
+    total_asked <- total_asked - num_refused_num
+    
+    total_people <- raw_data %>%
+      select(ONPROBLEM.a_W56) %>%
+      summarize(
+        n = n()
+      ) %>%
+      pull(n[1])
+    
+    text <- paste("Note:", 
+                  paste(
+                    paste(total_asked, total_people, sep = "/"), 
+                    "participants answered this question."), sep = " ")
+  })
+  
+  output$effectofonlinetext <- renderText({
+    num_refused_num <- raw_data %>%
+      filter(ONIMPACT_W56 == "Refused") %>%
+      summarize(
+        num_refused = n()
+      ) %>%
+      pull(num_refused[1])
+    
+    
+    total_asked <- raw_data %>%
+      select(ONIMPACT_W56) %>%
+      summarize(
+        n = n(),
+        
+        ## count NAs https://stackoverflow.com/questions/44290704/count-non-na-values-by-group
+        num_na = sum(is.na(ONIMPACT_W56)),
+        num_asked = n - (num_na)
+      ) %>%
+      pull(num_asked[1])
+    
+    total_asked <- total_asked - num_refused_num
+    
+    total_people <- raw_data %>%
+      select(ONIMPACT_W56) %>%
+      summarize(
+        n = n()
+      ) %>%
+      pull(n[1])
+    
+    text <- paste("Note:", 
+                  paste(
+                    paste(total_asked, total_people, sep = "/"), 
+                    "participants answered this question."), sep = " ")
+  })
+  
   
   }
 
