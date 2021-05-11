@@ -434,9 +434,13 @@ ui <- fluidPage(
           ),
           fluidRow(column(6,
                           plotlyOutput("botheredbycell"),
+                          br(),
+                          textOutput("cellphoneonepartanswer"),
                           br()),
                    column(6,
                           plotlyOutput("distractedbycell"),
+                          br(),
+                          textOutput("cellphonetwopartanswer"),
                           br())
           ),
           
@@ -1337,6 +1341,7 @@ server <- function(input, output, session) {
                    
                    ## remove NAs https://www.edureka.co/community/634/how-to-remove-na-values-with-dplyr-filter
                    filter(!is.na(PARTNERSCREEN.a_W56)) %>%
+                   filter(PARTNERSCREEN.a_W56 != "Refused") %>%
                    group_by(PARTNERSCREEN.a_W56) %>%
                    summarize(
                      n = n(),
@@ -1373,6 +1378,7 @@ server <- function(input, output, session) {
                    
                    ## remove NAs https://www.edureka.co/community/634/how-to-remove-na-values-with-dplyr-filter
                    filter(!is.na(PARTNERDISTRACT_W56)) %>%
+                   filter(PARTNERDISTRACT_W56 != "Refused") %>%
                    group_by(PARTNERDISTRACT_W56) %>%
                    summarize(
                      n = n(),
@@ -1405,7 +1411,7 @@ server <- function(input, output, session) {
   output$cellphonetext <- renderText("Another possibility for why participants are dissatisfied with dating is that
                                      we constantly use our cell phones. 40% of participants said that they were sometimess or often
                                      bothered by the amount of time that their spouse or partner spent on their cell phone, highlighting
-                                     how others' behavior in technology can put a strain on relationships. Perhaps more notably, a majority of the sample (53%)
+                                     how others' behavior in technology can put a strain on relationships. Perhaps more notably, a majority of the sample (54%)
                                      said that they sometimes or often feel that their partners are distracted by a cell phone while 
                                      they want to have a conversation. This high level of distraction has the potential to make casual dating
                                      and committed relationships alike difficult.")
@@ -1820,6 +1826,76 @@ server <- function(input, output, session) {
     
     total_people <- raw_data %>%
       select(SNSFEEL_W56) %>%
+      summarize(
+        n = n()
+      ) %>%
+      pull(n[1])
+    
+    text <- paste("Note:", 
+                  paste(
+                    paste(total_asked, total_people, sep = "/"), 
+                    "participants answered this question."), sep = " ")
+  })
+  
+  output$cellphoneonepartanswer <- renderText({
+    num_refused_num <- raw_data %>%
+      filter(PARTNERSCREEN.a_W56 == "Refused") %>%
+      summarize(
+        num_refused = n()
+      ) %>%
+      pull(num_refused[1])
+    
+    
+    total_asked <- raw_data %>%
+      select(PARTNERSCREEN.a_W56) %>%
+      summarize(
+        n = n(),
+        
+        ## count NAs https://stackoverflow.com/questions/44290704/count-non-na-values-by-group
+        num_na = sum(is.na(PARTNERSCREEN.a_W56)),
+        num_asked = n - (num_na)
+      ) %>%
+      pull(num_asked[1])
+    
+    total_asked <- total_asked - num_refused_num
+    
+    total_people <- raw_data %>%
+      select(PARTNERSCREEN.a_W56) %>%
+      summarize(
+        n = n()
+      ) %>%
+      pull(n[1])
+    
+    text <- paste("Note:", 
+                  paste(
+                    paste(total_asked, total_people, sep = "/"), 
+                    "participants answered this question."), sep = " ")
+  })
+  
+  output$cellphonetwopartanswer <- renderText({
+    num_refused_num <- raw_data %>%
+      filter(PARTNERDISTRACT_W56 == "Refused") %>%
+      summarize(
+        num_refused = n()
+      ) %>%
+      pull(num_refused[1])
+    
+    
+    total_asked <- raw_data %>%
+      select(PARTNERDISTRACT_W56) %>%
+      summarize(
+        n = n(),
+        
+        ## count NAs https://stackoverflow.com/questions/44290704/count-non-na-values-by-group
+        num_na = sum(is.na(PARTNERDISTRACT_W56)),
+        num_asked = n - (num_na)
+      ) %>%
+      pull(num_asked[1])
+    
+    total_asked <- total_asked - num_refused_num
+    
+    total_people <- raw_data %>%
+      select(PARTNERDISTRACT_W56) %>%
       summarize(
         n = n()
       ) %>%
