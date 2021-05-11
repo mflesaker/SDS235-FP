@@ -286,9 +286,13 @@ ui <- fluidPage(
             column(5,
                    plotlyOutput("characterizingsampleideology"),
                    br(),
+                   textOutput("partansweredpoliticalideo"),
+                   br(),
                    br()),
             column(5,
                    plotlyOutput("characterizingsamplerace"),
+                   br(),
+                   textOutput("partanswerrace"),
                    br(),
                    br()),
             column(1)
@@ -296,10 +300,14 @@ ui <- fluidPage(
           fluidRow(
             column(1),
             column(5,
-                   plotlyOutput("characterizingsampleage")),
+                   plotlyOutput("characterizingsampleage"),
+                   br(), 
+                   textOutput("partanswerage")),
             
             column(5,
-                   plotlyOutput("characterizingsampleeduc")),
+                   plotlyOutput("characterizingsampleeduc"),
+                   br(),
+                   textOutput("partanswereduc")),
             column(1)
           )
           
@@ -794,7 +802,7 @@ server <- function(input, output, session) {
   output$textbtwo <- renderText("We thought that, perhaps jealousy and insecurity inflicted by social media
                                 play a role here. We note that more females in committed relationships reported feeling insecure because of their partner's social media use (30%) than males (15%). However, both of these
                                 proportions are relatively low, so social media jealousy may not account for dissatisfaction with dating.")
-  output$characterizing_sample_text <- renderText("This sample is largely married (40%), straight (68%), politically moderate (35%) or liberal (26%), non-Hispanic white (68%), and ages 30-64 (64%) with a college degree or higher (46%).")
+  output$characterizing_sample_text <- renderText("This sample is largely married (40%), straight (68%), politically moderate (36%) or liberal (27%), non-Hispanic white (69%), and ages 30-64 (64%) with a college degree or higher (46%).")
   
   output$characterizingsamplemstatus <- renderPlotly({
     g <- raw_data %>%
@@ -854,6 +862,8 @@ server <- function(input, output, session) {
     raw_data$F_IDEO <- factor(raw_data$F_IDEO,levels = c("Very conservative", "Conservative", "Moderate", "Liberal", "Very liberal", "Refused"))
     
     g <- raw_data %>%
+      filter(F_IDEO != "Refused") %>%
+      filter(!is.na(F_IDEO)) %>%
       group_by(F_IDEO) %>%
       summarize(
         n = n()
@@ -877,6 +887,8 @@ server <- function(input, output, session) {
   
   output$characterizingsamplerace <- renderPlotly({
     g <- raw_data %>%
+      filter(F_RACETHN != "Refused") %>%
+      filter(!is.na(F_RACETHN)) %>%
       group_by(F_RACETHN) %>%
       summarize(
         n = n()
@@ -900,6 +912,8 @@ server <- function(input, output, session) {
   
   output$characterizingsampleage <- renderPlotly({
     g <- raw_data %>%
+      filter(F_AGECAT != "DK/REF") %>%
+      filter(!is.na(F_AGECAT)) %>%
       group_by(F_AGECAT) %>%
       summarize(
         n = n()
@@ -927,6 +941,8 @@ server <- function(input, output, session) {
     
     
     g <- raw_data %>%
+      filter(F_EDUCCAT != "Don't know/Refused") %>%
+      filter(!is.na(F_EDUCCAT)) %>%
       group_by(F_EDUCCAT) %>%
       summarize(
         n = n()
@@ -1430,6 +1446,150 @@ server <- function(input, output, session) {
       select(
         lookup_questions %>%
           filter(questions == "Sexual orientation") %>%
+          pull(var_names[1])) %>%
+      summarize(
+        n = n()
+      ) %>%
+      pull(n[1])
+    
+    text <- paste("Note:", 
+                  paste(
+                    paste(total_asked, total_people, sep = "/"), 
+                    "participants answered this question."), sep = " ")
+  })
+  
+  output$partansweredpoliticalideo <- renderText({
+    total_asked <- raw_data %>%
+      select(
+        lookup_questions %>%
+          filter(questions == "Political ideology") %>%
+          pull(var_names[1])) %>%
+      summarize(
+        n = n(),
+        
+        ## count NAs https://stackoverflow.com/questions/44290704/count-non-na-values-by-group
+        num_na = sum(is.na(get(lookup_questions %>%
+                                 filter(questions == "Political ideology") %>%
+                                 pull(var_names[1])))),
+        num_refused = sum((get(lookup_questions %>%
+                                 filter(questions == "Political ideology") %>%
+                                 pull(var_names[1]))) == "Refused"),
+        num_asked = n - (num_na + num_refused)
+      ) %>%
+      pull(num_asked[1])
+    
+    total_people <- raw_data %>%
+      select(
+        lookup_questions %>%
+          filter(questions == "Political ideology") %>%
+          pull(var_names[1])) %>%
+      summarize(
+        n = n()
+      ) %>%
+      pull(n[1])
+    
+    text <- paste("Note:", 
+                  paste(
+                    paste(total_asked, total_people, sep = "/"), 
+                    "participants answered this question."), sep = " ")
+  })
+  
+  output$partanswerrace <- renderText({
+    total_asked <- raw_data %>%
+      select(
+        lookup_questions %>%
+          filter(questions == "Race/Ethnicity") %>%
+          pull(var_names[1])) %>%
+      summarize(
+        n = n(),
+        
+        ## count NAs https://stackoverflow.com/questions/44290704/count-non-na-values-by-group
+        num_na = sum(is.na(get(lookup_questions %>%
+                                 filter(questions == "Race/Ethnicity") %>%
+                                 pull(var_names[1])))),
+        num_refused = sum((get(lookup_questions %>%
+                                 filter(questions == "Race/Ethnicity") %>%
+                                 pull(var_names[1]))) == "Refused"),
+        num_asked = n - (num_na + num_refused)
+      ) %>%
+      pull(num_asked[1])
+    
+    total_people <- raw_data %>%
+      select(
+        lookup_questions %>%
+          filter(questions == "Race/Ethnicity") %>%
+          pull(var_names[1])) %>%
+      summarize(
+        n = n()
+      ) %>%
+      pull(n[1])
+    
+    text <- paste("Note:", 
+                  paste(
+                    paste(total_asked, total_people, sep = "/"), 
+                    "participants answered this question."), sep = " ")
+  })
+  
+  output$partanswerage <- renderText({
+    total_asked <- raw_data %>%
+      select(
+        lookup_questions %>%
+          filter(questions == "Age category") %>%
+          pull(var_names[1])) %>%
+      summarize(
+        n = n(),
+        
+        ## count NAs https://stackoverflow.com/questions/44290704/count-non-na-values-by-group
+        num_na = sum(is.na(get(lookup_questions %>%
+                                 filter(questions == "Age category") %>%
+                                 pull(var_names[1])))),
+        num_refused = sum((get(lookup_questions %>%
+                                 filter(questions == "Age category") %>%
+                                 pull(var_names[1]))) == "DK/REF"),
+        num_asked = n - (num_na + num_refused)
+      ) %>%
+      pull(num_asked[1])
+    
+    total_people <- raw_data %>%
+      select(
+        lookup_questions %>%
+          filter(questions == "Age category") %>%
+          pull(var_names[1])) %>%
+      summarize(
+        n = n()
+      ) %>%
+      pull(n[1])
+    
+    text <- paste("Note:", 
+                  paste(
+                    paste(total_asked, total_people, sep = "/"), 
+                    "participants answered this question."), sep = " ")
+  })
+  
+  output$partanswereduc <- renderText({
+    total_asked <- raw_data %>%
+      select(
+        lookup_questions %>%
+          filter(questions == "Education") %>%
+          pull(var_names[1])) %>%
+      summarize(
+        n = n(),
+        
+        ## count NAs https://stackoverflow.com/questions/44290704/count-non-na-values-by-group
+        num_na = sum(is.na(get(lookup_questions %>%
+                                 filter(questions == "Education") %>%
+                                 pull(var_names[1])))),
+        num_refused = sum((get(lookup_questions %>%
+                                 filter(questions == "Education") %>%
+                                 pull(var_names[1]))) == "Don't know/Refused"),
+        num_asked = n - (num_na + num_refused)
+      ) %>%
+      pull(num_asked[1])
+    
+    total_people <- raw_data %>%
+      select(
+        lookup_questions %>%
+          filter(questions == "Education") %>%
           pull(var_names[1])) %>%
       summarize(
         n = n()
