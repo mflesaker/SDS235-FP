@@ -199,6 +199,10 @@ lookup_questions <- data.frame(var_names, questions)
 ## (strong("text") idea and syntax)
 
 ui <- fluidPage(
+## https://stackoverflow.com/questions/47743789/change-the-default-error-message-in-shiny
+  
+  tags$head(tags$style(".shiny-output-error{visibility: hidden}")),
+                tags$head(tags$style(".shiny-output-error:after{content: 'Both of these questions are conditional, and no one was asked both of the questions. Please select a different combination of variables.'; visibility: visible}")),
   theme = shinytheme("flatly"),
   navbarPage(
     "CSC/SDS 235 Final Project: Michelle, Lauryn, Grace",
@@ -576,6 +580,8 @@ server <- function(input, output, session) {
   
   # Attempt to build heatmap
   
+  
+    
   output$heatmap <- renderPlotly({
     if(input$variable1 != input$variable2){
       
