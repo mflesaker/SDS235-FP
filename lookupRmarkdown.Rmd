@@ -191,74 +191,86 @@ lookup_questions <- data.frame(var_names, questions)
 
 
 ```{r}
-total_asked <- raw_data %>%
-  select(
-        lookup_questions %>%
-          filter(questions == "How important is it to you that online profiles included religious beliefs?") %>%
-          pull(var_names[1])) %>%
-  summarize(
-        n = n(),
-        
-        ## count NAs https://stackoverflow.com/questions/44290704/count-non-na-values-by-group
-        num_not_na = sum(!is.na(get(lookup_questions %>%
-          filter(questions == "How important is it to you that online profiles included religious beliefs?") %>%
-          pull(var_names[1]))))
-  ) %>%
-  pull(num_not_na[1])
 
-total_people <- raw_data %>%
-  select(
-        lookup_questions %>%
-          filter(questions == "How important is it to you that online profiles included religious beliefs?") %>%
-          pull(var_names[1])) %>%
-  summarize(
-        n = n(),
-        
-        ## count NAs https://stackoverflow.com/questions/44290704/count-non-na-values-by-group
-        num_not_na = sum(!is.na(get(lookup_questions %>%
-          filter(questions == "How important is it to you that online profiles included religious beliefs?") %>%
-          pull(var_names[1]))))
-  ) %>%
-  pull(n[1]) 
+# Scales in the order in which you want them to appear
+first_scale <- c(NA,"Not currently looking for a relationship or dates", "Casual dates only", "Either a comitted romantic relationship or casual dates", "A committed romantic relationship only", "Refused")
+second_scale <- c(NA, "Not a reason", "Minor reason", "Major reason")
+third_scale <- c(NA, "Less than 1 year", "1 year to less than 3 years", "3 years to less than 5 years", "5 years to less than 10 years", "10 years to less than 20 years", "20 years or more", "Refused")
+fourth_scale <- c(NA, "Not at all well", "Not too well", "Fairly well", "Very well", "Refused")
+fifth_scale <- c(NA, "No, but I used one more than 5 years ago", "No, but I have used one within the past year", "Yes, I am currently using an online dating site or dating app", "Refused")
+sixth_scale <- c(NA, "Harder today", "About the same", "Easier today", "Refused")
+seventh_scale <- c(NA, "Never acceptable", "Rarely acceptable", "Sometimes acceptable", "Always acceptable", "Refused")
+eighth_scale <- c(NA, "Not contact them, and not respond if they contacted you", "Not contact them, but would let them know if they contacted you", "Contact them and let them know", "Refused")
+ninth_scale <- c(NA, "Has made it harder for men", "Hasn't made much difference", "Has made it easier for men", "Refused")
+tenth_scale <- c(NA, "Has made it harder for women", "Hasn't made much difference", "Has made it easier for women", "Refused")
+eleventh_scale <- c(NA, "Mostly negative effect", "Neither positive or negative effect", "Mostly positive effect", "Refused")
+twelfth_scale <- c(NA, "Less successsful", "Just as successful", "More successful", "Refused")
+thirteenth_scale <- c(NA, "Not at all safe", "Not too safe", "Somewhat safe", "Very safe", "Refused")
+fourteenth_scale <- c(NA, "Not at all common", "Not too common", "Somewhat common", "Very common", "Refused")
+fifteenth_scale <- c(NA, "Definitely would NOT consider", "Probably would NOT consider", "Probably would consider", "Definitely would consider", "Have already done this", "Refused")
+sixteenth_scale <- c("No pressure at all", "Not too much pressure", "Some pressure", "A lot of pressure", "Refused")
+seventeenth_scale <- c("Very difficult", "Somewhat difficult", "Somewhat easy", "Very easy", "Refused")
+eighteenth_scale <- c("Very negative", "Somewhat negative", "Somewhat positive", "Very positive", "Refused")
+nineteenth_scale <- c("Insecure", "Neither", "Confident", "Refused")
+twentieth_scale <- c("Pessimistic", "Neither", "Optimistic", "Refused")
+twenty_first_scale <- c("Frustrated", "Neither", "Hopeful", "Refused")
+twenty_second_scale <- c("Not at all important", "Not too important", "Somewhat important", "Very important", "Refused")
+twenty_third_scale <- c("Not enough messages", "Just the right amount", "Too many messages", "Refused")
+twenty_fourth_scale <- c("Not enough messages from people you were interested in", "Just the right amount", "Too many messages from people you were interested in", "Refused")
+twenty_fifth_scale <- c("Not well at all", "Not too well", "Somewhat well", "Very well", "Refused")
+twenty_sixth_scale <- c("Very concerned", "Somewhat concerned", "Not too concerned", "Not at all concerned", "Refused")
+twenty_seventh_scale <- c("Never", "Rarely", "Sometimes", "Often", "Refused")
+twenty_eighth_scale <- c("Worse about your own relationship", "Doesn't make much difference", "Better about your own relationship", "Refused")
+twenty_ninth_scale <- c("Worse about your own dating life", "Doesn't make much difference", "Better about your own dating life", "Refused")
+thirtieth_scale <- c("H.S. graduate or less", "Some college", "College graduate+", "Don't know/Refused")
+thirty_first_scale <- c("Less than high school", "High school graduate", "Some college, no degree", "Associate's degree", "College graduate/some post grad", "Postgraduate")
+thirty_second_scale <- c("Less than $10,000", "$10,000 to less than $20,000", "$20,000 to less than $30,000", "$30,000 to less than $40,000", "$40,000 to less than $50,000", "$50,000 to less than $75,000", "$75,000 to less than $100,000", "$100,000 to less than $150,000", "$150,000 or more", "Refused")
+thirty_third_scale <- c("Very conservative", "Conservative", "Moderate", "Liberal", "Very liberal", "Refused")
 
-g <- ggplot(raw_data %>%
-              
-              ## remove NAs https://www.edureka.co/community/634/how-to-remove-na-values-with-dplyr-filter
-      filter(!is.na(get(lookup_questions %>%
-          filter(questions == "How important is it to you that online profiles included religious beliefs?") %>%
-          pull(var_names[1])))) %>%
-      group_by_(
-        lookup_questions %>%
-          filter(questions == "How important is it to you that online profiles included religious beliefs?") %>%
-          pull(var_names[1])) %>%
-      summarize(
-        n = n(),
-        num_not_na = sum(!is.na(get(lookup_questions %>%
-          filter(questions == "How important is it to you that online profiles included religious beliefs?") %>%
-          pull(var_names[1]))))
-      ), aes(
-        x = get(lookup_questions %>%
-                  filter(questions == "How important is it to you that online profiles included religious beliefs?") %>%
-                  pull(var_names[1])),
-        y = n
-      )) +
-      geom_col() +
-      
-      xlab(str_wrap("Education")) +
-      ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
-      scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
-      geom_text(aes(x = length(levels(get(lookup_questions %>%
-                  filter(questions == "How important is it to you that online profiles included religious beliefs?") %>%
-                  pull(var_names[1])))) + 2, y = (1.1*max(n)), label = paste(paste(total_asked, total_people, sep = "/"), "total participants were asked this question", sep = " ")),
-                 hjust = 1, vjust = -1)
+scales <- list(first_scale, second_scale, third_scale, fourth_scale, fifth_scale, sixth_scale, seventh_scale, eighth_scale, ninth_scale, tenth_scale, eleventh_scale, twelfth_scale, thirteenth_scale, fourteenth_scale, fifteenth_scale, sixteenth_scale, seventeenth_scale, eighteenth_scale, nineteenth_scale, twentieth_scale, twenty_first_scale, twenty_second_scale, twenty_third_scale, twenty_fourth_scale, twenty_fifth_scale, twenty_sixth_scale, twenty_seventh_scale, twenty_eighth_scale, twenty_ninth_scale, thirtieth_scale, thirty_first_scale, thirty_second_scale, thirty_third_scale)
+  
+  ## if the factor levels are the same as the ones in the thirty_first_scale, reorder the levels to match this convention
+
+
+## with help from 
+## https://statisticsglobe.com/loop-through-data-frame-columns-rows-in-r/ especially, and
+
+## https://campus.datacamp.com/courses/intermediate-r/chapter-2-loops?ex=8
+## https://stackoverflow.com/questions/34646076/r-check-if-all-values-of-one-column-match-uniquely-all-values-of-another-column
+## https://hbctraining.github.io/Intro-to-R/lessons/05_introR-data-wrangling2.html
+## http://www.cookbook-r.com/Manipulating_data/Changing_the_order_of_levels_of_a_factor/
+## https://stackoverflow.com/questions/44084798/getting-the-nth-column-of-a-dataframe-using-a-for-loop
+## https://stackoverflow.com/questions/56820739/looping-over-dataframes-in-r-to-change-column-and-row-names
+## https://stat.ethz.ch/R-manual/R-devel/library/base/html/colnames.html
+## https://rdrr.io/r/base/colnames.html
+## https://stat.ethz.ch/R-manual/R-devel/library/base/html/sort.html
+
+for(i in 1:ncol(raw_data)) {
+  
+  for(j in 1:length(scales)){
     
-    ## tooltip from 
-    ## https://stackoverflow.com/questions/40598011/how-to-customize-hover-information-in-ggplotly-object/40598524
-    ## and
-    ## https://www.rdocumentation.org/packages/plotly/versions/4.9.3/topics/ggplotly
+    if (
+      identical(
+        sort(unlist(unique(raw_data[i]))), 
+        sort(unlist(scales[j]))
+      )
+    ){ 
+      
+      print(levels(raw_data[i]))
+      
+      raw_data[i] <- factor(raw_data[i], levels = scales[j])
+      
+      print(levels(raw_data[i]))
+      
+    }
+  #  else{
+  #    print("column i does not match scale")
+  #  }
+  }
+}
 
-ggplotly(g, tooltip = "y")
 ```
+
 
 
 
