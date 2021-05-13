@@ -15,6 +15,8 @@ raw_data <- read_csv("final_project_app/data.csv") %>%
 var_names<-dput(names(raw_data))
 #Convert variable names to single column with 183 rows
 var_names <- cbind(var_names)
+
+write_csv(raw_data, "raw_data")
 ```
 
 ```{r}
@@ -187,6 +189,8 @@ questions <- cbind(questions)
 
 #Combine variables and questions into df
 lookup_questions <- data.frame(var_names, questions)
+
+write_csv(lookup_questions, "lookup_table")
 ```
 
 
@@ -228,6 +232,7 @@ thirty_second_scale <- c("Less than $10,000", "$10,000 to less than $20,000", "$
 thirty_third_scale <- c("Very conservative", "Conservative", "Moderate", "Liberal", "Very liberal", "Refused")
 
 scales <- list(first_scale, second_scale, third_scale, fourth_scale, fifth_scale, sixth_scale, seventh_scale, eighth_scale, ninth_scale, tenth_scale, eleventh_scale, twelfth_scale, thirteenth_scale, fourteenth_scale, fifteenth_scale, sixteenth_scale, seventeenth_scale, eighteenth_scale, nineteenth_scale, twentieth_scale, twenty_first_scale, twenty_second_scale, twenty_third_scale, twenty_fourth_scale, twenty_fifth_scale, twenty_sixth_scale, twenty_seventh_scale, twenty_eighth_scale, twenty_ninth_scale, thirtieth_scale, thirty_first_scale, thirty_second_scale, thirty_third_scale)
+
   
   ## if the factor levels are the same as the ones in the thirty_first_scale, reorder the levels to match this convention
 
@@ -245,27 +250,34 @@ scales <- list(first_scale, second_scale, third_scale, fourth_scale, fifth_scale
 ## https://rdrr.io/r/base/colnames.html
 ## https://stat.ethz.ch/R-manual/R-devel/library/base/html/sort.html
 
-for(i in 1:ncol(raw_data)) {
-  
-  for(j in 1:length(scales)){
-    
-    if (
-      identical(
-        sort(unlist(unique(raw_data[i]))), 
-        sort(unlist(scales[j]))
-      )
-    ){ 
-      
-      print(levels(raw_data[i]))
-      
-      raw_data[i] <- factor(raw_data[i], levels = scales[j])
-      
-      print(levels(raw_data[i]))
-      
+raw_data <- data.frame(a = as.factor(c("Sometimes","Never", "Sometimes", "Always", "Never")),
+                        b = as.factor(c("Likely", "Very Likely", "Unlikely", "Very Unlikely", "Very Unlikely")),
+                        c = as.factor(c("Likely", "Very Likely", "Unlikely", "Very Unlikely", "Very Unlikely")),
+                        d = as.factor(c("Sometimes","Never", "Sometimes", "Always", "Never"))
+)
+# ---------------------------
+# ...and a couple fake scales
+# ---------------------------
+first_scale <- c("Never", "Sometimes", "Always")
+second_scale <- c("Very Unlikely", "Unlikely", "Likely", "Very Likely")
+# ----------------------
+# Put scales into a list
+# ----------------------
+scales = list(first_scale, second_scale)
+# ---------------------
+# FUN PART STARTS HERE!
+# ---------------------
+# Loop over each column name
+for(col in names(raw_data)) {
+  # Loop over each possible scale
+  for(scale in scales){
+    # Check to see if all the levels in the column are contained in the current scale (to deal w/ missing levels)
+    if ( all(levels(raw_data[[col]]) %in% scale)) {
+      # When we find the right scale, reorder the factor levels
+      cat("Before reordering:", levels(raw_data[[col]]), "\n")
+      raw_data[[col]] <- factor(raw_data[[col]], levels = scale)
+      cat("After reordering:", levels(raw_data[[col]]), "\n\n")
     }
-  #  else{
-  #    print("column i does not match scale")
-  #  }
   }
 }
 
