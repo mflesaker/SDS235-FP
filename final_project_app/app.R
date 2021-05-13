@@ -5,6 +5,7 @@ library(bslib)
 library(rsconnect)
 library(shinythemes)
 library(plotly)
+library(shinyWidgets)
 
 raw_data <- read_csv("data.csv") %>%
   select(
@@ -12,6 +13,7 @@ raw_data <- read_csv("data.csv") %>%
     -ONIMPACTPOSOE_M3_W56, -ONIMPACTNEGOE_M1_W56, -ONIMPACTNEGOE_M2_W56,
     -ONIMPACTNEGOE_M3_W56, -F_ACSWEB, -F_VOLSUM, -WEIGHT_W56_ATPONLY, -WEIGHT_W56, -F_ATTEND
   )
+
 
 # Get variable names from original dataset
 var_names <- dput(names(raw_data))
@@ -208,8 +210,20 @@ ui <- fluidPage(
     "CSC/SDS 235 Final Project: Michelle, Lauryn, Grace",
     tabPanel(
       "Interactive Dashboard",
+      fluidRow(
+        column(12,
+               ## h3 from https://shiny.rstudio.com/tutorial/written-tutorial/lesson2/
+               h3("Explore the Data!"),
+               textOutput("howtousetext"),
+               
+               ## https://shiny.rstudio.com/tutorial/written-tutorial/lesson2/ br idea
+               br())
+      ),
       sidebarLayout(
         sidebarPanel(
+          
+          ## https://shiny.rstudio.com/reference/shiny/latest/radioButtons.html
+          prettyRadioButtons(inputId = "plotType", label = "Plot Type", c(Bar = "bar", Heatmap = "count"), selected = "bar"),
           
           ## selected = idea and syntax from https://shiny.rstudio.com/reference/shiny/0.12.2/selectInput.html
           selectInput(inputId = "variable1", label = "Choose a first variable", selected = "Current Committed Relationship Status", lookup_questions$questions),
@@ -217,7 +231,6 @@ ui <- fluidPage(
           ## code for this conditional panel is directly copied and pasted from
           ## the example at https://shiny.rstudio.com/reference/shiny/1.3.0/conditionalPanel.html -----------
           
-          selectInput(inputId = "plotType", label = "Plot Type", c(Bar = "bar", Heatmap = "count"), selected = "bar"),
           # Only show this panel if the plot type is a two-way count
           conditionalPanel(
             condition = "input.plotType == 'count'",
@@ -258,7 +271,7 @@ ui <- fluidPage(
       fluidRow(
         column(
           12,
-          ## h3 from https://shiny.rstudio.com/tutorial/written-tutorial/lesson2/
+          
           h3("About Our Project"),
           htmlOutput("aboutprojtext"),
           
@@ -778,7 +791,7 @@ server <- function(input, output, session) {
       xlab(str_wrap("In general in the past year, has using online dating sites or dating apps made you feel more hopeful or frustrated?"))+
       ylab("Sex")+
       scale_x_discrete(labels = function(x) str_wrap(x, width = 10))+
-      scale_fill_gradient(low = "#FFFFFF", high = "#000773", na.value = "#8E8E8E") 
+      scale_fill_gradient(low = "#FFFFFF", high = "#004D71", na.value = "#8E8E8E") 
     
     ggplotly(g, tooltip = "fill")
   })
@@ -809,7 +822,7 @@ server <- function(input, output, session) {
       xlab(str_wrap("Have you ever felt jealous or unsure about your relationship because of the way your current spouse or partner interacts with other people on social media?"))+
       ylab("Sex")+
       scale_x_discrete(labels = function(x) str_wrap(x, width = 10))+
-      scale_fill_gradient(low = "#FFFFFF", high = "#000773", na.value = "#8E8E8E") 
+      scale_fill_gradient(low = "#FFFFFF", high = "#DD7405", na.value = "#8E8E8E") 
     
     ggplotly(g, tooltip = "fill")
     
@@ -1112,7 +1125,7 @@ server <- function(input, output, session) {
       
       ## HTML color codes from https://htmlcolorcodes.com/
       ## scale fill gradient idea and syntax from https://ggplot2.tidyverse.org/reference/scale_gradient.html
-      scale_fill_gradient(low = "#FFFFFF", high = "#000773", na.value = "#8E8E8E") +
+      scale_fill_gradient(low = "#FFFFFF", high = "#000773", na.value = "#8E8E8E", limits = c(0,300)) +
       xlab("Overall, would you say that things in your dating life are going...") +
       ylab("Sex") +
       ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
@@ -1150,7 +1163,7 @@ server <- function(input, output, session) {
       
       ## HTML color codes from https://htmlcolorcodes.com/
       ## scale fill gradient idea and syntax from https://ggplot2.tidyverse.org/reference/scale_gradient.html
-      scale_fill_gradient(low = "#FFFFFF", high = "#000773", na.value = "#8E8E8E") +
+      scale_fill_gradient(low = "#FFFFFF", high = "#000773", na.value = "#8E8E8E", limits = c(0,300)) +
       xlab("Overall, would you say that things in your dating life are going...") +
       ylab("Age") +
       ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
@@ -1193,7 +1206,7 @@ server <- function(input, output, session) {
       
       ## HTML color codes from https://htmlcolorcodes.com/
       ## scale fill gradient idea and syntax from https://ggplot2.tidyverse.org/reference/scale_gradient.html
-      scale_fill_gradient(low = "#FFFFFF", high = "#000773", na.value = "#8E8E8E") +
+      scale_fill_gradient(low = "#FFFFFF", high = "#035B00", na.value = "#8E8E8E", limits = c(0,1400)) +
       xlab("Compared to 10 years ago, for most people, do you think dating is...") +
       ylab("Sex") +
       ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
@@ -1231,7 +1244,7 @@ server <- function(input, output, session) {
       
       ## HTML color codes from https://htmlcolorcodes.com/
       ## scale fill gradient idea and syntax from https://ggplot2.tidyverse.org/reference/scale_gradient.html
-      scale_fill_gradient(low = "#FFFFFF", high = "#000773", na.value = "#8E8E8E") +
+      scale_fill_gradient(low = "#FFFFFF", high = "#035B00", na.value = "#8E8E8E", limits = c(0,1400)) +
       xlab("Compared to 10 years ago, for most people, do you think dating is...") +
       ylab("Age") +
       ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
@@ -1365,7 +1378,7 @@ server <- function(input, output, session) {
       xlab(str_wrap("How often, if ever, are you bothered by the amount of time your spouse or partner spends on their cellphone?")) +
       ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
       scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
-      scale_y_continuous("Number of Participants", expand = c(0,0)) +
+      scale_y_continuous("Number of Participants", expand = c(0,0), limits = c(0,1100)) +
       theme(panel.background = element_blank(), axis.ticks = element_blank(), 
             axis.line = element_line(color = "black"),
             axis.title.x = element_text(vjust = 1))
@@ -1402,7 +1415,7 @@ server <- function(input, output, session) {
       xlab(str_wrap("How often, if ever, do you feel as if your spouse or partner is distracted by their cellphone when you are trying to have a conversation with them?")) +
       ## Wrapping axis ticks https://stackoverflow.com/questions/21878974/wrap-long-axis-labels-via-labeller-label-wrap-in-ggplot2
       scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
-      scale_y_continuous("Number of Participants", expand = c(0,0)) +
+      scale_y_continuous("Number of Participants", expand = c(0,0), limits = c(0,1100)) +
       theme(panel.background = element_blank(), axis.ticks = element_blank(), 
             axis.line = element_line(color = "black"),
             axis.title.x = element_text(vjust = 1))
@@ -1913,6 +1926,10 @@ server <- function(input, output, session) {
                     paste(total_asked, total_people, sep = "/"), 
                     "participants answered this question."), sep = " ")
   })
+  
+  output$howtousetext <- renderText("Start by selecting a plot type. If you would like to visualize one variable, select \"bar\"; if you would
+                                    like to select two variables, select \"heatmap\". Then, choose the variable(s) you would like to visualize from the
+                                    dropdown menu(s) below.")
   
   
   }
